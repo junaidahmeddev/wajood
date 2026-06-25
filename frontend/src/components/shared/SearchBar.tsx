@@ -79,26 +79,27 @@ export default function SearchBar({ onSearchSubmit, onSelectCase, placeholder = 
   };
 
   return (
-    <div className="relative w-full max-w-xl mx-auto" ref={dropdownRef}>
-      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2.5 w-full">
-        <div className="relative flex-1 w-full">
-          <input
-            type="text"
-            value={query}
-            onChange={handleInputChange}
-            onFocus={() => setShowDropdown(true)}
-            placeholder={placeholder}
-            className="form-input px-4 w-full min-h-[44px]"
-            id="global-search-bar"
-          />
-          {loading && (
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-500 animate-pulse">
-              Matching...
-            </span>
-          )}
+    <div className="relative w-full mx-auto" ref={dropdownRef}>
+      <form onSubmit={handleSubmit} className="relative flex items-center w-full h-[48px] bg-slate-900 border border-slate-700 hover:border-slate-500 focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500 rounded-[10px] overflow-hidden transition px-2">
+        <div className="flex items-center justify-center pl-2 text-slate-400">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
         </div>
-        <button type="submit" className="btn-primary min-h-[44px] px-6 py-2.5 w-full sm:w-auto shrink-0 flex items-center justify-center font-bold">
-          <span>Search</span>
+        <input
+          type="text"
+          value={query}
+          onChange={handleInputChange}
+          onFocus={() => setShowDropdown(true)}
+          placeholder={placeholder}
+          className="flex-1 h-full bg-transparent border-none outline-none px-3 text-sm text-white placeholder-slate-400"
+          id="global-search-bar"
+        />
+        {loading && (
+          <span className="text-xs text-slate-500 animate-pulse mr-3">
+            Matching...
+          </span>
+        )}
+        <button type="submit" className="h-[36px] px-6 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition shrink-0">
+          Search
         </button>
       </form>
 

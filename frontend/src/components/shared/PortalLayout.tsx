@@ -20,6 +20,7 @@ export default function PortalLayout({ portalName, portalIcon, portalColor, allo
   const router = useRouter();
   const { user, isAuthenticated, loadFromStorage } = useAuthStore();
   const [mounted, setMounted] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     loadFromStorage();
@@ -37,7 +38,6 @@ export default function PortalLayout({ portalName, portalIcon, portalColor, allo
     public: "PUBLIC",
   };
 
-  // Allow public access or role-based access
   const hasAccess = !allowedRoles.length || (user && (
     user.role === "ADMIN" ||
     allowedRoles.some((r) => r === user.role || r.toUpperCase() === user.role || roleMap[r.toLowerCase()] === user.role)
@@ -45,155 +45,115 @@ export default function PortalLayout({ portalName, portalIcon, portalColor, allo
 
   const getDemoName = (pName: string) => {
     const lower = pName.toLowerCase();
-    if (lower.includes("ngo") || lower.includes("shelter")) return { name: "Edhi Foundation Worker", role: "NGO Worker" };
-    if (lower.includes("police") || lower.includes("officer") || lower.includes("law")) return { name: "FIA Officer", role: "Law Enforcement" };
-    if (lower.includes("hospital") || lower.includes("morgue") || lower.includes("doctor")) return { name: "Dr. Ahmed (Jinnah Hospital)", role: "Medical Examiner" };
-    if (lower.includes("media") || lower.includes("broadcast")) return { name: "ARY News Reporter", role: "Media Partner" };
-    if (lower.includes("government") || lower.includes("ndma")) return { name: "NDMA Official", role: "Govt Official" };
-    if (lower.includes("volunteer")) return { name: "Demo Volunteer", role: "Volunteer" };
-    if (lower.includes("forensics")) return { name: "PFSA Lab Technician", role: "Forensic Scientist" };
-    return { name: "Demo Citizen", role: "Public Citizen" };
+    if (lower.includes("ngo") || lower.includes("shelter")) return { name: "Edhi Foundation Worker", role: "NGO Worker", initials: "EW" };
+    if (lower.includes("police") || lower.includes("officer") || lower.includes("law")) return { name: "FIA Officer", role: "Law Enforcement", initials: "FO" };
+    if (lower.includes("hospital") || lower.includes("morgue") || lower.includes("doctor")) return { name: "Dr. Ahmed", role: "Medical Examiner", initials: "DA" };
+    if (lower.includes("media") || lower.includes("broadcast")) return { name: "ARY News", role: "Media Partner", initials: "AN" };
+    if (lower.includes("government") || lower.includes("ndma")) return { name: "NDMA Official", role: "Govt Official", initials: "NO" };
+    if (lower.includes("volunteer")) return { name: "Demo Volunteer", role: "Volunteer", initials: "DV" };
+    if (lower.includes("forensics")) return { name: "PFSA Technician", role: "Forensic Scientist", initials: "PT" };
+    return { name: "Demo Citizen", role: "Public Citizen", initials: "DC" };
   };
 
   const demoUser = getDemoName(portalName);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="page-enter flex flex-col min-h-screen bg-slate-950 text-slate-100 overflow-x-hidden relative w-full max-w-full">
-      {/* ─── NATIONAL INFRASTRUCTURE TELEMETRY BANNER ─── */}
-      <div className="bg-gradient-to-r from-blue-950 via-indigo-950 to-slate-950 text-slate-300 text-center py-2 px-3 text-[11px] sm:text-xs font-semibold relative z-50 w-full border-b border-indigo-500/20 tracking-wide">
-        <p className="line-clamp-1 sm:line-clamp-none">
-          🇵🇰 NATIONAL CIVIC REGISTRY — WAJOOD: Pakistan&apos;s Unified AI Biometric Missing Persons Network | Real-Time Telemetry Grid
-        </p>
-      </div>
+      <div className="mesh-gradient fixed inset-0 pointer-events-none" />
 
-      {/* ─── MOBILE TOP HEADER WITH HAMBURGER (Guaranteed Top Full-Width) ─── */}
-      <div className="md:hidden sticky top-0 inset-x-0 h-16 bg-slate-900/95 backdrop-blur-2xl border-b border-white/10 px-4 flex items-center justify-between z-50 w-full">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-lg bg-white/5 text-slate-300 hover:text-white text-lg min-h-[44px] min-w-[44px] flex items-center justify-center border border-white/5"
-            aria-label="Toggle Menu"
-          >
-            ☰
-          </button>
-          <div className="flex items-baseline gap-1">
-            <span className="text-xl font-black gradient-text tracking-tight">WAJOOD</span>
-            <span className="text-[9px] font-extrabold text-slate-400 tracking-[0.2em] uppercase">PAKISTAN</span>
+      {/* ─── STICKY PORTAL HEADER ─── */}
+      <nav className="sticky top-0 inset-x-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/10 h-16 px-4 sm:px-6 w-full flex items-center justify-between">
+        {/* Left: WAJOOD Logo */}
+        <div className="flex items-center">
+          <Link href="/" className="flex items-baseline gap-1.5 no-underline shrink-0 group">
+            <span className="text-xl sm:text-2xl font-black gradient-text tracking-tighter">WAJOOD</span>
+          </Link>
+        </div>
+
+        {/* Center: Portal Badge (Hidden on very small screens) */}
+        <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+          <span className="text-base leading-none">{portalIcon}</span>
+          <span className="text-xs font-bold" style={{ color: portalColor }}>{portalName} Portal</span>
+        </div>
+
+        {/* Right: User Chip & Nav Links */}
+        <div className="hidden md:flex items-center gap-4 h-full">
+          <nav className="flex items-center gap-4 text-xs font-bold text-slate-300">
+             <Link href="/" className="hover:text-white transition">Home</Link>
+             <Link href="/dashboard" className="hover:text-white transition">Dashboard</Link>
+          </nav>
+          <div className="w-px h-6 bg-white/10 mx-1" />
+          <NotificationBell />
+          <div className="flex items-center gap-2">
+             <div className="w-9 h-9 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold text-xs shrink-0">
+               {demoUser.initials}
+             </div>
+             <div className="flex flex-col text-left">
+                <span className="text-xs font-bold text-slate-200 leading-tight">{demoUser.name}</span>
+                <span className="text-[10px] text-slate-400 capitalize leading-tight">{demoUser.role}</span>
+             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        {/* Mobile Navbar Elements */}
+        <div className="flex md:hidden items-center gap-3">
           <NotificationBell />
+          <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold text-xs shrink-0">
+            {demoUser.initials}
+          </div>
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-1.5 rounded-lg bg-white/5 text-slate-300 hover:text-white flex items-center justify-center border border-white/10"
+            aria-label="Toggle Menu"
+          >
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              {mobileMenuOpen ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /> : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />}
+            </svg>
+          </button>
         </div>
-      </div>
+      </nav>
 
       {/* ─── MOBILE DRAWER MENU ─── */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex">
-          <div className="w-72 bg-slate-900 border-r border-white/10 h-full p-6 flex flex-col justify-between animate-fadeIn shadow-2xl">
-            <div className="space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-white/10">
-                <span className="text-lg font-black gradient-text">WAJOOD Menu</span>
-                <button onClick={() => setMobileMenuOpen(false)} className="text-slate-400 hover:text-white p-2 min-h-[44px] min-w-[44px] flex items-center justify-center">✕</button>
-              </div>
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5">
-                <span className="text-xl">{portalIcon}</span>
-                <span className="text-xs font-bold truncate" style={{ color: portalColor }}>{portalName}</span>
-              </div>
-              <nav className="space-y-2">
-                <Link onClick={() => setMobileMenuOpen(false)} href="/" className="block p-3 rounded-xl text-xs font-bold text-slate-200 bg-white/5 border border-white/5">🏠 Platform Home</Link>
-                <Link onClick={() => setMobileMenuOpen(false)} href="/dashboard" className="block p-3 rounded-xl text-xs font-bold text-slate-200 bg-white/5 border border-white/5">📊 Dashboard Feed</Link>
-              </nav>
-            </div>
-            <div className="pt-4 border-t border-white/10 text-xs text-slate-400">
-              👤 {demoUser.name}
-            </div>
+        <div className="md:hidden fixed inset-x-0 top-16 z-40 bg-slate-900/95 border-b border-white/10 p-5 shadow-2xl backdrop-blur-2xl animate-fadeIn flex flex-col gap-3">
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5 mb-2">
+            <span className="text-xl">{portalIcon}</span>
+            <span className="text-sm font-bold truncate" style={{ color: portalColor }}>{portalName} Portal</span>
           </div>
-          <div className="flex-1" onClick={() => setMobileMenuOpen(false)} />
+          <Link onClick={() => setMobileMenuOpen(false)} href="/" className="w-full py-3 text-center font-bold block bg-white/5 rounded-xl border border-white/5 text-slate-200">
+            Platform Home
+          </Link>
+          <Link onClick={() => setMobileMenuOpen(false)} href="/dashboard" className="w-full py-3 text-center font-bold block bg-white/5 rounded-xl border border-white/5 text-slate-200">
+            National Dashboard
+          </Link>
+          <div className="mt-2 pt-4 border-t border-white/10 flex items-center gap-3">
+             <div className="flex flex-col text-left">
+                <span className="text-xs font-bold text-slate-200 leading-tight">{demoUser.name}</span>
+                <span className="text-[10px] text-slate-400 capitalize leading-tight">{demoUser.role}</span>
+             </div>
+          </div>
         </div>
       )}
 
-      <div className="flex flex-col md:flex-row flex-1 min-h-screen relative w-full max-w-full">
-        <div className="mesh-gradient fixed inset-0 pointer-events-none" />
+      {/* ─── MAIN CONTENT AREA ─── */}
+      <main className="flex-1 w-full max-w-[1200px] mx-auto relative z-10">
+        {children}
 
-        {/* ─── DESKTOP SIDEBAR ─── */}
-        <aside className="hidden md:flex w-64 bg-slate-900/90 backdrop-blur-2xl border-r border-white/10 flex-col justify-between p-6 sticky top-0 h-[calc(100vh-36px)] z-50 shadow-2xl shrink-0">
-          <div className="space-y-8">
-            <div className="flex items-baseline gap-1.5 pb-4 border-b border-white/10">
-              <Link href="/" className="text-2xl font-black gradient-text tracking-tighter">WAJOOD</Link>
+        {/* Subtle Universal Portal Footer */}
+        <footer className="mt-16 pt-8 pb-12 border-t border-white/10 text-xs text-slate-500 w-full px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-base font-black gradient-text tracking-tight text-white">WAJOOD</span>
               <span className="text-[9px] font-extrabold text-slate-400 tracking-[0.2em] uppercase">PAKISTAN</span>
             </div>
-
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5">
-              <span className="text-2xl">{portalIcon}</span>
-              <span className="text-sm font-bold truncate" style={{ color: portalColor }}>{portalName}</span>
-            </div>
-
-            <nav className="space-y-2 pt-2">
-              <Link href="/" className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-slate-300 hover:bg-white/5 hover:text-white transition border border-transparent hover:border-white/5">
-                Platform Home
-              </Link>
-              <Link href="/dashboard" className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-slate-300 hover:bg-white/5 hover:text-white transition border border-transparent hover:border-white/5">
-                Dashboard Feed
-              </Link>
-            </nav>
-          </div>
-
-          <div className="space-y-4 pt-4 border-t border-white/10">
-            <div className="flex items-center justify-between px-2">
-              <span className="text-xs font-bold text-slate-400">Alerts</span>
-              <NotificationBell />
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                <div className="truncate">
-                  <p className="text-xs font-bold text-slate-200 truncate">{demoUser.name}</p>
-                  <p className="text-[10px] text-slate-400 truncate capitalize">{demoUser.role}</p>
-                </div>
-              </div>
+            <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-4 text-slate-600 font-medium text-[11px]">
+              <span>© {new Date().getFullYear()} WAJOOD Network. All rights reserved.</span>
+              <span className="hidden sm:inline">•</span>
+              <span>Architected by <span className="text-slate-400 font-semibold transition">Junaid Ahmed</span></span>
             </div>
           </div>
-        </aside>
-
-        {/* ─── MAIN CONTENT AREA ─── */}
-        <main className="flex-1 px-3 sm:px-6 md:px-8 py-6 max-w-7xl mx-auto w-full max-w-full overflow-x-hidden relative z-10">
-          {/* Portal Title Banner */}
-          <div className="mb-6 sm:mb-8 p-4 sm:p-6 saas-card flex items-center justify-between flex-wrap gap-3">
-            <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-white/5 flex items-center justify-center text-2xl border border-white/10 shrink-0">
-                {portalIcon}
-              </div>
-              <div>
-                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white line-clamp-1">
-                  {portalName} <span style={{ color: portalColor }}>Portal</span>
-                </h1>
-                <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 line-clamp-1">Unified Nationwide Reunification Telemetry</p>
-              </div>
-            </div>
-          </div>
-
-          {children}
-
-          {/* Subtle Universal Portal Footer */}
-          <footer className="mt-16 pt-8 pb-12 border-t border-white/10 text-xs text-slate-500 max-w-7xl mx-auto w-full px-4">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-base font-black gradient-text tracking-tight">WAJOOD</span>
-                <span className="text-[9px] font-extrabold text-slate-400 tracking-[0.2em] uppercase">PAKISTAN</span>
-                <span className="text-slate-600 ml-1 hidden xs:inline">• National Missing Persons Grid</span>
-              </div>
-              <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-4 text-slate-600 font-medium text-[11px]">
-                <span>© {new Date().getFullYear()} WAJOOD Network. All rights reserved.</span>
-                <span className="hidden sm:inline">•</span>
-                <span>Architected by <span className="text-slate-400 font-semibold hover:text-indigo-400 transition">Junaid Ahmed</span></span>
-              </div>
-            </div>
-          </footer>
-        </main>
-      </div>
+        </footer>
+      </main>
     </div>
   );
 }
