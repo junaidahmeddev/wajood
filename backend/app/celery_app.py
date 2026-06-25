@@ -1,0 +1,18 @@
+from celery import Celery
+from app.config import settings
+
+celery_app = Celery(
+    "wajood",
+    broker=settings.REDIS_URL,
+    backend=settings.REDIS_URL,
+    include=["app.tasks"]
+)
+
+celery_app.conf.update(
+    task_serializer="json",
+    result_serializer="json",
+    accept_content=["json"],
+    timezone="Asia/Karachi",
+    enable_utc=True,
+    broker_connection_retry_on_startup=True,
+)

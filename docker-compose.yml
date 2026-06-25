@@ -1,0 +1,141 @@
+version: "3.9"
+
+services:
+  # ═══════════════════════════════════════════════
+  # PostgreSQL 15 — Primary Database
+  # ═══════════════════════════════════════════════
+  postgres:
+    image: postgres:15
+    container_name: wajood-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: wajood
+      POSTGRES_USER: wajood
+      POSTGRES_PASSWORD: wajood123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wajood"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ═══════════════════════════════════════════════
+  # Redis 7 — Caching, Celery Broker, Pub/Sub
+  # ═══════════════════════════════════════════════
+  redis:
+    image: redis:7-alpine
+    container_name: wajood-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ═══════════════════════════════════════════════
+  # MinIO — S3-Compatible Object Storage (Photos)
+  # ═══════════════════════════════════════════════
+  minio:
+    image: minio/minio
+    container_name: wajood-minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: wajood
+      MINIO_ROOT_PASSWORD: wajood123
+    volumes:
+      - minio_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ═══════════════════════════════════════════════
+  # FastAPI Backend — REST API + WebSocket
+  # ═══════════════════════════════════════════════
+  backend:
+    build:
+      context: ./backend
+      network: host
+    container_name: wajood-backend
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    env_file: .env
+    volumes:
+      - ./backend:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ═══════════════════════════════════════════════
+  # Celery Worker — Background AI Matching + Notifications
+  # ═══════════════════════════════════════════════
+  celery:
+    build:
+      context: ./backend
+      network: host
+    container_name: wajood-celery
+    command: celery -A app.celery_app worker --loglevel=info
+    env_file: .env
+    volumes:
+      - ./backend:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ═══════════════════════════════════════════════
+  # Next.js Frontend — React UI (Dev Mode)
+  # ═══════════════════════════════════════════════
+  frontend:
+    build:
+      context: ./frontend
+      network: host
+    container_name: wajood-frontend
+    command: npm run dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # ═══════════════════════════════════════════════
+  # Nginx — Reverse Proxy + WebSocket Upgrade
+  # ═══════════════════════════════════════════════
+  nginx:
+    image: nginx:alpine
+    container_name: wajood-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  minio_data:
