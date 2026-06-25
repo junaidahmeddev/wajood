@@ -82,16 +82,13 @@ export default function SearchBar({ onSearchSubmit, onSelectCase, placeholder = 
     <div className="relative w-full max-w-xl mx-auto" ref={dropdownRef}>
       <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2.5 w-full">
         <div className="relative flex-1 w-full">
-          <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
           <input
             type="text"
             value={query}
             onChange={handleInputChange}
             onFocus={() => setShowDropdown(true)}
             placeholder={placeholder}
-            className="form-input pl-11 w-full min-h-[44px]"
+            className="form-input px-4 w-full min-h-[44px]"
             id="global-search-bar"
           />
           {loading && (

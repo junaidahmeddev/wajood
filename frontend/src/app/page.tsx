@@ -39,6 +39,7 @@ const HOW_IT_WORKS = [
 export default function LandingPage() {
   const { loadFromStorage } = useAuthStore();
   const [mounted, setMounted] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     loadFromStorage();
@@ -61,16 +62,38 @@ export default function LandingPage() {
             </span>
           </Link>
 
-          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-            <Link href="/dashboard" className="btn-secondary px-3 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm min-h-[38px] sm:min-h-[44px] flex items-center justify-center font-bold whitespace-nowrap">
-              <span>Dashboard</span>
+          {/* Desktop Nav Buttons */}
+          <div className="hidden sm:flex items-center gap-3 shrink-0">
+            <Link href="/dashboard" className="btn-secondary px-5 py-2 text-sm min-h-[44px] flex items-center justify-center font-bold">
+              Dashboard
             </Link>
-            <Link href="/public" className="btn-primary px-3 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm min-h-[38px] sm:min-h-[44px] flex items-center justify-center font-bold whitespace-nowrap">
-              <span><span className="inline sm:hidden">Portals</span><span className="hidden sm:inline">Explore Portals</span></span>
+            <Link href="/public" className="btn-primary px-5 py-2 text-sm min-h-[44px] flex items-center justify-center font-bold">
+              Explore Portals
             </Link>
           </div>
+
+          {/* Mobile Menu Trigger Button */}
+          <button
+            onClick={() => setMobileNavOpen(!mobileNavOpen)}
+            className="sm:hidden p-2 rounded-lg bg-white/5 border border-white/10 text-slate-200 hover:text-white min-h-[44px] min-w-[44px] flex items-center justify-center text-lg shrink-0"
+            aria-label="Open Menu"
+          >
+            {mobileNavOpen ? "✕" : "☰"}
+          </button>
         </div>
       </nav>
+
+      {/* Mobile Dropdown Drawer Menu Box */}
+      {mobileNavOpen && (
+        <div className="sm:hidden fixed inset-x-0 top-[64px] z-40 bg-slate-900/95 border-b border-white/10 p-5 shadow-2xl backdrop-blur-2xl animate-fadeIn flex flex-col gap-3">
+          <Link onClick={() => setMobileNavOpen(false)} href="/dashboard" className="btn-secondary w-full py-3 text-center font-bold block min-h-[44px] flex items-center justify-center">
+            National Dashboard
+          </Link>
+          <Link onClick={() => setMobileNavOpen(false)} href="/public" className="btn-primary w-full py-3 text-center font-bold block min-h-[44px] flex items-center justify-center">
+            Explore All Portals →
+          </Link>
+        </div>
+      )}
 
       {/* ── Hero Section ── */}
       <section className="pt-28 sm:pt-36 pb-16 sm:pb-24 px-4 sm:px-6 md:px-8 max-w-5xl mx-auto flex flex-col items-center text-center">
@@ -181,16 +204,19 @@ export default function LandingPage() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="py-12 px-4 border-t border-white/10 text-center text-xs sm:text-sm text-slate-500">
-        <div className="flex items-baseline justify-center gap-1.5 mb-3">
-          <span className="text-xl font-black gradient-text tracking-tight">WAJOOD</span>
-          <span className="text-[9px] font-extrabold text-slate-400 tracking-[0.2em] uppercase">PAKISTAN</span>
-          <span className="text-slate-600 ml-1">• National Missing Persons Grid</span>
+      <footer className="py-10 px-4 sm:px-8 border-t border-white/10 bg-slate-950 text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-base sm:text-lg font-black gradient-text tracking-tight">WAJOOD</span>
+            <span className="text-[9px] font-extrabold text-slate-400 tracking-[0.2em] uppercase">PAKISTAN</span>
+            <span className="text-slate-600 ml-1 hidden xs:inline">• National Missing Persons Grid</span>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-5 text-slate-600 font-medium">
+            <span>© {new Date().getFullYear()} WAJOOD Network. All rights reserved.</span>
+            <span className="hidden sm:inline">•</span>
+            <span>Conceived &amp; Developed by <span className="text-slate-400 font-semibold tracking-wide hover:text-indigo-400 transition">Junaid Ahmed</span></span>
+          </div>
         </div>
-        <p>© {new Date().getFullYear()} WAJOOD Pakistan. All rights reserved.</p>
-        <p className="mt-2 text-xs text-slate-600 font-medium">
-          Conceived &amp; Developed by <span className="text-slate-400 font-semibold tracking-wide hover:text-indigo-400 transition">Junaid Ahmed</span>
-        </p>
       </footer>
     </div>
   );

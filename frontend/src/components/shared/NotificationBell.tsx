@@ -139,7 +139,9 @@ export default function NotificationBell() {
           hasNewAlert ? "animate-bell-shake ring-2 ring-indigo-500" : ""
         }`}
       >
-        <span className="text-lg">🔔</span>
+        <svg className="w-5 h-5 text-slate-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
         {totalUnread > 0 && (
           <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-[20px] rounded-full bg-red-600 border-2 border-slate-900 text-[10px] font-black text-white flex items-center justify-center px-1 font-mono shadow-lg animate-bounce">
             {totalUnread > 99 ? "99+" : totalUnread}
@@ -153,13 +155,13 @@ export default function NotificationBell() {
         />
       </button>
 
-      {/* Dropdown Overlay List */}
+      {/* Dropdown Overlay List (Guaranteed Solid Opaque) */}
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-80 sm:w-96 max-h-[80vh] glass-card border border-white/15 bg-slate-950/95 shadow-2xl z-[100] rounded-2xl flex flex-col overflow-hidden animate-fade-in">
+        <div className="absolute right-0 mt-3 w-80 sm:w-96 max-h-[80vh] bg-slate-900 border border-slate-700 shadow-[0_25px_60px_-15px_rgba(0,0,0,1)] z-[9999] rounded-2xl flex flex-col overflow-hidden animate-fade-in !opacity-100 backdrop-blur-none">
           {/* Header */}
-          <div className="p-4 border-b border-white/10 flex justify-between items-center bg-blue-950/20">
+          <div className="p-4 border-b border-white/10 flex justify-between items-center bg-slate-800">
             <div className="flex items-center gap-2">
-              <h5 className="text-sm font-black text-white tracking-wide">🚨 Notifications & Alerts</h5>
+              <h5 className="text-sm font-black text-white tracking-wide">Notifications &amp; Alerts</h5>
               <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-bold">
                 {totalUnread} Unread
               </span>

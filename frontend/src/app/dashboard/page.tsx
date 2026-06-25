@@ -15,6 +15,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentCases, setRecentCases] = useState<Case[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     loadFromStorage();
@@ -58,24 +59,45 @@ export default function DashboardPage() {
       <div className="mesh-gradient fixed inset-0 pointer-events-none" />
 
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/10 px-3 sm:px-6 md:px-8 min-h-[64px] flex items-center justify-between py-2 gap-2">
+      <nav className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/10 px-4 sm:px-8 min-h-[64px] flex items-center justify-between py-2 gap-2">
         <div className="flex items-center gap-2 sm:gap-6 shrink-0">
           <Link href="/" className="flex items-baseline gap-1 no-underline group">
-            <span className="text-lg sm:text-2xl font-black gradient-text tracking-tight">WAJOOD</span>
-            <span className="text-[8px] sm:text-[10px] font-extrabold text-slate-400 tracking-[0.2em] uppercase opacity-90 group-hover:text-indigo-400 transition-colors">PAKISTAN</span>
+            <span className="text-xl sm:text-2xl font-black gradient-text tracking-tight">WAJOOD</span>
+            <span className="text-[9px] sm:text-[10px] font-extrabold text-slate-400 tracking-[0.2em] uppercase opacity-90 group-hover:text-indigo-400 transition-colors">PAKISTAN</span>
           </Link>
-          <span className="text-slate-500 text-xs sm:text-sm font-medium hidden sm:inline">/ Dashboard</span>
+          <span className="text-slate-500 text-xs sm:text-sm font-medium hidden sm:inline">• National Dashboard</span>
         </div>
-        <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
-          <Link href="/public" className="btn-secondary px-3 sm:px-4 py-1.5 text-xs sm:text-sm min-h-[38px] sm:min-h-[40px] flex items-center justify-center font-semibold whitespace-nowrap">
-            <span><span className="inline sm:hidden">Portals</span><span className="hidden sm:inline">Explore Portals</span></span>
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+          <Link href="/public" className="hidden sm:flex btn-secondary px-4 py-2 text-sm min-h-[44px] items-center justify-center font-bold">
+            Explore Portals →
           </Link>
           <div className="hidden sm:flex items-center gap-2 bg-white/5 rounded-xl px-3.5 py-1.5 border border-white/5">
             <div className="w-2 h-2 rounded-full" style={{ background: getRoleColor(demoUser.role) }} />
             <span className="text-xs text-slate-300 font-semibold truncate max-w-[120px]">{demoUser.full_name}</span>
           </div>
+
+          {/* Mobile Hamburger Trigger */}
+          <button
+            onClick={() => setMobileNavOpen(!mobileNavOpen)}
+            className="sm:hidden p-2 rounded-lg bg-white/5 border border-white/10 text-slate-200 hover:text-white min-h-[44px] min-w-[44px] flex items-center justify-center text-lg shrink-0"
+            aria-label="Open Menu"
+          >
+            {mobileNavOpen ? "✕" : "☰"}
+          </button>
         </div>
       </nav>
+
+      {/* Mobile Dropdown Drawer Menu Box */}
+      {mobileNavOpen && (
+        <div className="sm:hidden sticky top-[64px] z-40 bg-slate-900/95 border-b border-white/10 p-5 shadow-2xl backdrop-blur-2xl animate-fadeIn flex flex-col gap-3">
+          <Link onClick={() => setMobileNavOpen(false)} href="/public" className="btn-primary w-full py-3 text-center font-bold block min-h-[44px] flex items-center justify-center">
+            Explore All Portals →
+          </Link>
+          <Link onClick={() => setMobileNavOpen(false)} href="/" className="btn-secondary w-full py-3 text-center font-bold block min-h-[44px] flex items-center justify-center">
+            🏠 Platform Home
+          </Link>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-10">
         {/* Welcome */}
@@ -160,10 +182,25 @@ export default function DashboardPage() {
                   </table>
                 </div>
               )}
-            </div>
           </>
         )}
       </div>
+
+      {/* ── Footer ── */}
+      <footer className="mt-16 py-10 px-4 sm:px-8 border-t border-white/10 bg-slate-950 text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-base sm:text-lg font-black gradient-text tracking-tight">WAJOOD</span>
+            <span className="text-[9px] font-extrabold text-slate-400 tracking-[0.2em] uppercase">PAKISTAN</span>
+            <span className="text-slate-600 ml-1 hidden xs:inline">• National Missing Persons Grid</span>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-5 text-slate-600 font-medium">
+            <span>© {new Date().getFullYear()} WAJOOD Network. All rights reserved.</span>
+            <span className="hidden sm:inline">•</span>
+            <span>Conceived &amp; Developed by <span className="text-slate-400 font-semibold tracking-wide hover:text-indigo-400 transition">Junaid Ahmed</span></span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

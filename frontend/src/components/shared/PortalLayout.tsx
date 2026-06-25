@@ -178,13 +178,19 @@ export default function PortalLayout({ portalName, portalIcon, portalColor, allo
           {children}
 
           {/* Subtle Universal Portal Footer */}
-          <footer className="mt-16 pt-8 pb-12 border-t border-white/5 text-center text-xs text-slate-500 max-w-7xl mx-auto w-full">
-            <p className="opacity-75 hover:opacity-100 transition duration-300">
-              © {new Date().getFullYear()} WAJOOD Pakistan • National Missing Persons Reunification Grid
-            </p>
-            <p className="mt-1.5 text-[11px] text-slate-600 tracking-wide font-medium">
-              Architected &amp; Engineered by <span className="text-slate-400 font-semibold hover:text-indigo-400 transition">Junaid Ahmed</span>
-            </p>
+          <footer className="mt-16 pt-8 pb-12 border-t border-white/10 text-xs text-slate-500 max-w-7xl mx-auto w-full px-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-base font-black gradient-text tracking-tight">WAJOOD</span>
+                <span className="text-[9px] font-extrabold text-slate-400 tracking-[0.2em] uppercase">PAKISTAN</span>
+                <span className="text-slate-600 ml-1 hidden xs:inline">• National Missing Persons Grid</span>
+              </div>
+              <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-4 text-slate-600 font-medium text-[11px]">
+                <span>© {new Date().getFullYear()} WAJOOD Network. All rights reserved.</span>
+                <span className="hidden sm:inline">•</span>
+                <span>Architected by <span className="text-slate-400 font-semibold hover:text-indigo-400 transition">Junaid Ahmed</span></span>
+              </div>
+            </div>
           </footer>
         </main>
       </div>
