@@ -181,12 +181,15 @@ export default function LandingPage() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="py-10 px-4 border-t border-white/10 text-center text-xs sm:text-sm text-slate-500">
+      <footer className="py-12 px-4 border-t border-white/10 text-center text-xs sm:text-sm text-slate-500">
         <div className="flex items-center justify-center gap-2 mb-3">
           <span className="text-xl font-black gradient-text">WAJOOD</span>
           <span>• National Reunification Grid</span>
         </div>
         <p>© {new Date().getFullYear()} WAJOOD Pakistan. Built for SSUET FYP 2026 Evaluation.</p>
+        <p className="mt-2 text-xs text-slate-600 font-medium">
+          Conceived &amp; Developed by <span className="text-slate-400 font-semibold tracking-wide hover:text-indigo-400 transition">Junaid Ahmed</span>
+        </p>
       </footer>
     </div>
   );

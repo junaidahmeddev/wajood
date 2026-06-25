@@ -172,6 +172,16 @@ export default function PortalLayout({ portalName, portalIcon, portalColor, allo
           </div>
 
           {children}
+
+          {/* Subtle Universal Portal Footer */}
+          <footer className="mt-16 pt-8 pb-12 border-t border-white/5 text-center text-xs text-slate-500 max-w-7xl mx-auto w-full">
+            <p className="opacity-75 hover:opacity-100 transition duration-300">
+              © {new Date().getFullYear()} WAJOOD Pakistan • National Missing Persons Reunification Telemetry
+            </p>
+            <p className="mt-1.5 text-[11px] text-slate-600 tracking-wide font-medium">
+              Conceived &amp; Engineered by <span className="text-slate-400 font-semibold hover:text-indigo-400 transition">Junaid Ahmed</span> (SSUET FYP 2026)
+            </p>
+          </footer>
         </main>
       </div>
     </div>
