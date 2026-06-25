@@ -211,14 +211,17 @@ export default function PublicPortal() {
         </div>
 
         {/* ─── Action Controls Bar ─── */}
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 border-y border-white/10 py-4 sm:py-6 saas-card px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 border-y border-white/10 py-4 sm:py-6 saas-card px-4 sm:px-6 w-full">
           <button
             onClick={() => { setShowReportForm(!showReportForm); setTrackingCase(null); }}
-            className={`w-full sm:w-auto min-h-[48px] px-6 py-3.5 rounded-xl font-bold text-xs sm:text-sm shadow-lg flex items-center justify-center gap-2.5 transition shrink-0 ${showReportForm ? "bg-slate-800 text-slate-300 hover:bg-slate-700 border border-white/10" : "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-emerald-500/20"}`}
+            className={`w-full sm:w-auto min-h-[52px] px-5 py-3 rounded-xl font-bold text-xs sm:text-sm shadow-lg flex items-center justify-center gap-2.5 transition shrink-0 ${showReportForm ? "bg-slate-800 text-slate-300 hover:bg-slate-700 border border-white/10" : "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-emerald-500/20"}`}
             id="public-toggle-report-btn"
           >
-            <span className="text-lg shrink-0">{showReportForm ? "📂" : "🚨"}</span>
-            <span className="truncate">{showReportForm ? "Return to Active Feed" : "Report Missing Person (قومی گمشدہ رپورٹ)"}</span>
+            <span className="text-xl shrink-0">{showReportForm ? "📂" : "🚨"}</span>
+            <span className="flex flex-col text-center sm:text-left leading-tight">
+              <span>{showReportForm ? "Return to Active Feed" : "Report Missing Person"}</span>
+              {!showReportForm && <span className="text-[10px] font-normal opacity-85 mt-0.5">(قومی ریکارڈ برائے گمشدہ افراد)</span>}
+            </span>
           </button>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
