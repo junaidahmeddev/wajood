@@ -18,4 +18,5 @@ minio==7.2.12
 # opencv-python-headless==4.10.0.84
 cryptography==44.0.0
 psycopg2-binary==2.9.9
+aiosqlite==0.20.0
 
