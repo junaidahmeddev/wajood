@@ -24,35 +24,35 @@ export default function DashboardPage() {
   useEffect(() => {
     async function load() {
       try {
-        const [s, r] = await Promise.all([
-          api.getDashboardStats() as unknown as Promise<DashboardStats>,
-          api.getRecentCases(8) as unknown as Promise<Case[]>,
-        ]);
-        setStats(s);
-        setRecentCases(Array.isArray(r) ? r : []);
+        const resStats: any = await api.getDashboardStats();
+        const resCases: any = await api.getRecentCases(8);
+        setStats(resStats || null);
+        setRecentCases(Array.isArray(resCases) ? resCases : []);
       } catch { /* empty */ }
       setLoading(false);
     }
     load();
   }, []);
 
-  const demoUser = user || { full_name: "Demo Citizen", role: "PUBLIC" as any };
+  const demoUser = user || { full_name: "Demo Citizen", role: "PUBLIC" };
 
-  const statCards = stats ? [
-    { label: "Total Cases", value: stats.cases.total, icon: "📋", color: "#6366f1" },
-    { label: "Active Cases", value: stats.cases.active, icon: "🔍", color: "#3b82f6" },
-    { label: "Resolved", value: stats.cases.resolved, icon: "✅", color: "#10b981" },
-    { label: "Resolution Rate", value: `${stats.cases.resolution_rate}%`, icon: "📈", color: "#f59e0b" },
-    { label: "Missing Persons", value: stats.persons.missing, icon: "🚨", color: "#ef4444" },
-    { label: "Found Persons", value: stats.persons.found, icon: "🤝", color: "#8b5cf6" },
-  ] : [];
+  const statCards = stats
+    ? [
+        { label: "Total Cases", value: stats.cases.total, icon: "📋", color: "#6366f1" },
+        { label: "Active Cases", value: stats.cases.active, icon: "🔍", color: "#3b82f6" },
+        { label: "Resolved", value: stats.cases.resolved, icon: "✅", color: "#10b981" },
+        { label: "Resolution Rate", value: `${stats.cases.resolution_rate}%`, icon: "📈", color: "#f59e0b" },
+        { label: "Missing Persons", value: stats.persons.missing, icon: "🚨", color: "#ef4444" },
+        { label: "Found Persons", value: stats.persons.found, icon: "🤝", color: "#8b5cf6" },
+      ]
+    : [];
 
   return (
     <div className="page-enter min-h-screen bg-slate-950 text-slate-100 overflow-x-hidden relative w-full">
-      {/* ─── STEP 4: FYP DEMO MODE BANNER ─── */}
-      <div className="bg-blue-600 text-white text-center py-2 px-3 text-xs sm:text-sm font-bold relative z-50 w-full shadow-md">
+      {/* ─── NATIONAL INFRASTRUCTURE TELEMETRY BANNER ─── */}
+      <div className="bg-gradient-to-r from-blue-950 via-indigo-950 to-slate-950 text-slate-300 text-center py-2 px-3 text-[11px] sm:text-xs font-semibold relative z-50 w-full border-b border-indigo-500/20 tracking-wide">
         <p className="line-clamp-1 sm:line-clamp-none">
-          🎓 FYP Demo Mode — WAJOOD: Pakistan&apos;s Missing Persons Platform | SSUET 2026 | Evaluation Open
+          🇵🇰 NATIONAL CIVIC REGISTRY — WAJOOD: Pakistan&apos;s Unified AI Biometric Missing Persons Network | Real-Time Telemetry Grid
         </p>
       </div>
 
@@ -182,6 +182,7 @@ export default function DashboardPage() {
                   </table>
                 </div>
               )}
+            </div>
           </>
         )}
       </div>
