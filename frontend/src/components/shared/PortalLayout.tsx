@@ -60,10 +60,10 @@ export default function PortalLayout({ portalName, portalIcon, portalColor, allo
 
   return (
     <div className="page-enter flex flex-col min-h-screen bg-slate-950 text-slate-100 overflow-x-hidden relative w-full max-w-full">
-      {/* ─── STEP 4: FYP DEMO MODE BANNER ─── */}
-      <div className="bg-blue-600 text-white text-center py-2 px-3 text-xs sm:text-sm font-bold relative z-50 w-full shadow-md">
+      {/* ─── NATIONAL INFRASTRUCTURE TELEMETRY BANNER ─── */}
+      <div className="bg-gradient-to-r from-blue-950 via-indigo-950 to-slate-950 text-slate-300 text-center py-2 px-3 text-[11px] sm:text-xs font-semibold relative z-50 w-full border-b border-indigo-500/20 tracking-wide">
         <p className="line-clamp-1 sm:line-clamp-none">
-          🎓 FYP Demo Mode — WAJOOD: Pakistan&apos;s Missing Persons Platform | SSUET 2026 | Evaluation Open
+          🇵🇰 NATIONAL CIVIC REGISTRY — WAJOOD: Pakistan&apos;s Unified AI Biometric Missing Persons Network | Real-Time Telemetry Grid
         </p>
       </div>
 
@@ -77,7 +77,10 @@ export default function PortalLayout({ portalName, portalIcon, portalColor, allo
           >
             ☰
           </button>
-          <span className="text-xl font-black gradient-text tracking-tight">WAJOOD</span>
+          <div className="flex items-baseline gap-1">
+            <span className="text-xl font-black gradient-text tracking-tight">WAJOOD</span>
+            <span className="text-[9px] font-extrabold text-slate-400 tracking-[0.2em] uppercase">PAKISTAN</span>
+          </div>
         </div>
 
         <div className="flex items-center gap-3">
@@ -117,8 +120,9 @@ export default function PortalLayout({ portalName, portalIcon, portalColor, allo
         {/* ─── DESKTOP SIDEBAR ─── */}
         <aside className="hidden md:flex w-64 bg-slate-900/90 backdrop-blur-2xl border-r border-white/10 flex-col justify-between p-6 sticky top-0 h-[calc(100vh-36px)] z-50 shadow-2xl shrink-0">
           <div className="space-y-8">
-            <div className="flex items-center gap-3 pb-4 border-b border-white/10">
+            <div className="flex items-baseline gap-1.5 pb-4 border-b border-white/10">
               <Link href="/" className="text-2xl font-black gradient-text tracking-tighter">WAJOOD</Link>
+              <span className="text-[9px] font-extrabold text-slate-400 tracking-[0.2em] uppercase">PAKISTAN</span>
             </div>
 
             <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5">
@@ -128,10 +132,10 @@ export default function PortalLayout({ portalName, portalIcon, portalColor, allo
 
             <nav className="space-y-2 pt-2">
               <Link href="/" className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-slate-300 hover:bg-white/5 hover:text-white transition border border-transparent hover:border-white/5">
-                🏠 Platform Home
+                Platform Home
               </Link>
               <Link href="/dashboard" className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold text-slate-300 hover:bg-white/5 hover:text-white transition border border-transparent hover:border-white/5">
-                📊 Dashboard Feed
+                Dashboard Feed
               </Link>
             </nav>
           </div>
@@ -176,10 +180,10 @@ export default function PortalLayout({ portalName, portalIcon, portalColor, allo
           {/* Subtle Universal Portal Footer */}
           <footer className="mt-16 pt-8 pb-12 border-t border-white/5 text-center text-xs text-slate-500 max-w-7xl mx-auto w-full">
             <p className="opacity-75 hover:opacity-100 transition duration-300">
-              © {new Date().getFullYear()} WAJOOD Pakistan • National Missing Persons Reunification Telemetry
+              © {new Date().getFullYear()} WAJOOD Pakistan • National Missing Persons Reunification Grid
             </p>
             <p className="mt-1.5 text-[11px] text-slate-600 tracking-wide font-medium">
-              Conceived &amp; Engineered by <span className="text-slate-400 font-semibold hover:text-indigo-400 transition">Junaid Ahmed</span> (SSUET FYP 2026)
+              Architected &amp; Engineered by <span className="text-slate-400 font-semibold hover:text-indigo-400 transition">Junaid Ahmed</span>
             </p>
           </footer>
         </main>
