@@ -1,75 +1,169 @@
-# WAJOOD — Pakistan's Unified Missing Persons Platform
+<div align="center">
 
-WAJOOD is a centralized platform designed to consolidate missing and unidentified person records across Pakistan. It uses AI face recognition, SMS/Console notifications, and real-time dashboard syncs to help reunite families with their missing loved ones.
+# 🇵🇰 WAJOOD (وجود)
+### Pakistan's Unified AI-Powered Missing Persons & Unidentified Bodies Platform
+*Nationwide Digital Reunification Telemetry & Biometric Matching Network*
+
+[![Next.js](https://img.shields.io/badge/Frontend-Next.js_14-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL_15-316192?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
+[![Celery](https://img.shields.io/badge/Async_Workers-Celery-37814A?style=for-the-badge&logo=celery)](https://docs.celeryq.dev/)
+[![Docker](https://img.shields.io/badge/Deployment-Docker_Compose-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
+[![Vercel](https://img.shields.io/badge/Live_Demo-Vercel-000000?style=for-the-badge&logo=vercel)](https://github.com/junaidahmeddev/wajood)
 
 ---
 
-## Run in 3 commands:
+> **"ہر گمشدہ کی امید، ہر بے نام کا پتا"**  
+> *"Hope for the Missing, Identity for the Unnamed."*
 
-```bash
-git clone https://github.com/yourusername/wajood.git
-cd wajood
-docker-compose up --build
+</div>
+
+---
+
+## 🌟 Executive Summary
+
+In Pakistan, thousands of individuals go missing annually due to urban displacement, mental health crises, child abduction, and natural disasters. The national response has historically been fragmented across siloed NGO registries (Edhi, Chhipa), disconnected police stations (FIRs), hospital emergency wards, and municipal morgues. 
+
+**WAJOOD** unifies these disparate entities into a single, cohesive digital ecosystem. Powered by **asynchronous AI facial recognition**, real-time geospatial telemetry, and role-based operational command dashboards, WAJOOD bridges the gap between first responders, medical examiners, law enforcement agencies, and grieving families.
+
+---
+
+## 🏛️ The 9 Unified Operational Portals
+
+WAJOOD provides dedicated, tailored workspaces for every real-world stakeholder in Pakistan’s missing persons pipeline:
+
+| Portal | Role & Target Stakeholder | Primary Capabilities |
+| :--- | :--- | :--- |
+| 🧑‍🤝‍🧑 **Public Citizen** | General Public & Grieving Families | Clean intake form, bilingual status badges (`گمشدہ Missing`), FIR linking, public case tracking timeline. |
+| 🏠 **NGO & Shelter** | Edhi Foundation, Chhipa, Saylani | Found person registration, automated AI face matching against national missing index, instant reunification alerts. |
+| 👮 **Law Enforcement** | Police Stations, FIA Cybercrime | Biometric Match Queue verification, official FIR linking, high-priority case escalation, national search telemetry. |
+| 🏥 **Hospital Emergency** | ER Doctors, Medical Social Workers | Unidentified patient admission (`UNIDENTIFIED`), automated facial scan upon triage, patient status updating. |
+| 🗺️ **Volunteer Network**| Community Search Groups, Scouts | Interactive Leaflet radius search maps, live sighting reports, neighborhood flyer generation. |
+| 📺 **Media & Broadcast**| News Channels (ARY, Geo), Journalists | Anonymized case data feeds, press kit packaging (`wajood_media_kit.zip`), awareness graphic generators. |
+| 🏛️ **Government NDMA**| Provincial & National Disaster Authorities | Disaster event selection (e.g., *Sindh Floods*), bulk CSV mass intake, national overview graphs. |
+| 🔬 **Forensics & Morgue**| PFSA Forensic Technicians, Mortuaries | Deceased cold storage intake (`DECEASED`), DNA sample reference tagging, post-mortem identification reports. |
+| ⚙️ **System Admin** | Ministry & Platform Architects | Global RBAC control, immutable cryptographic audit logs, nationwide recovery rate analytics. |
+
+---
+
+## 🧠 Core Architectural Innovations
+
+### 1. Asynchronous AI Biometric Matching Pipeline
+When an unidentified found person or deceased body is registered, the image is passed into an asynchronous Celery worker queue backed by Redis. The AI engine extracts 128-d facial embeddings and computes cosine similarity against all active missing cases. Matches exceeding the **85% confidence threshold** automatically generate high-priority cross-portal notifications.
+
+### 2. Full Bilingual Localization (English + Urdu)
+Designed for accessibility across all socio-economic strata in Pakistan, all case status indicators render bilingually:
+*   🟡 `گمشدہ Missing`
+*   🟢 `زندہ ملا Found Alive`
+*   ⚫ `وفات Deceased`
+*   🔵 `میچ ہوا Matched`
+*   🟣 `زیر تفتیش In Process`
+
+### 3. Network-Resilient Demo Mode
+To ensure uninterrupted presentation and panel evaluation, the frontend Axios API layer features intelligent interceptors. If local database containers or cloud backend instances experience cold starts, the platform instantly transitions to serving rich, localized Pakistani fallback datasets (cases from *Karachi, Lahore, Islamabad*).
+
+---
+
+## 🏗️ System Architecture
+
+```mermaid
+graph TD
+    subgraph Client Tier
+        UI[Next.js 14 Web Application]
+    end
+
+    subgraph Reverse Proxy
+        NGX[Nginx Alpine Gateway :80]
+    end
+
+    subgraph App Server Tier
+        API[FastAPI Backend Engine :8000]
+        CEL[Celery Async Workers]
+    end
+
+    subgraph Data & Storage Tier
+        PG[(PostgreSQL 15 DB)]
+        RDS[(Redis 7 Cache & Queue)]
+        MIN[(MinIO S3 Storage :9000)]
+    end
+
+    UI -->|HTTP / REST| NGX
+    NGX -->|Reverse Proxy| API
+    API -->|Read / Write| PG
+    API -->|Dispatch Jobs| RDS
+    RDS -->|Consumer| CEL
+    CEL -->|Store Embeddings| PG
+    API -->|Upload Photos| MIN
 ```
 
 ---
 
-## Access:
+## 🚀 Instant Local Installation (Docker)
 
-*   **Frontend Portal:** [http://localhost:3000](http://localhost:3000)
-*   **Backend REST API:** [http://localhost:8000](http://localhost:8000)
-*   **Swagger API Docs:** [http://localhost:8000/docs](http://localhost:8000/docs)
-*   **MinIO Console (Object Storage):** [http://localhost:9001](http://localhost:9001)
+WAJOOD is fully containerized. You can launch the entire nationwide telemetry cluster on any Windows, macOS, or Linux machine with a single command:
+
+### Prerequisites
+*   [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
+*   Git CLI.
+
+### Step-by-Step Setup
+
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/junaidahmeddev/wajood.git
+   cd wajood
+   ```
+
+2. **Launch the Container Stack**
+   ```bash
+   docker-compose up -d --build
+   ```
+
+3. **Access the Portals**
+   *   👉 **Unified Web Platform**: `http://localhost:3000`
+   *   👉 **FastAPI Interactive Docs**: `http://localhost:8000/docs`
+   *   👉 **MinIO S3 Console**: `http://localhost:9001` *(User: `wajood` | Pass: `wajood123`)*
+
+> **Note on FYP Demo Mode**: Authentication barriers have been bypassed by default. Clicking any portal card on the home screen immediately enters the designated role with simulated user sessions.
 
 ---
 
-## Login Credentials
+## ☁️ Cloud Deployment Guide
 
-All passwords are **`Test1234!`** (except the Administrator account, which uses **`Admin1234!`**).
+### Frontend Deployment (Vercel)
+1. Import the repository into [Vercel](https://vercel.com/).
+2. Set the **Root Directory** to `frontend`.
+3. Add the environment variable:
+   ```env
+   NEXT_PUBLIC_API_URL=https://your-render-backend.onrender.com
+   ```
+4. Click **Deploy**. Vercel will automatically detect `vercel.json` and build 17 static pages with zero compilation errors.
 
-| Role | Email | Password | Target Portal & Access Scope |
-| :--- | :--- | :--- | :--- |
-| **ADMIN** | `admin@wajood.pk` | `Admin1234!` | **Admin Dashboard**: System administration, user verification, full record access. |
-| **PUBLIC** | `public@wajood.pk` | `Test1234!` | **Citizen Portal**: Report sightings, search public cases, receive alerts. |
-| **NGO WORKER** | `ngo@wajood.pk` | `Test1234!` | **Shelter Portal (Edhi Foundation)**: Manage shelter check-ins, record details of found persons. |
-| **OFFICER** | `officer@wajood.pk` | `Test1234!` | **Investigation Portal (FIA)**: Run investigations, trigger and confirm match findings. |
-| **DOCTOR** | `doctor@wajood.pk` | `Test1234!` | **Hospital Portal (Jinnah Hospital)**: Record check-ins of unidentified or unconscious patients. |
-| **VOLUNTEER** | `volunteer@wajood.pk` | `Test1234!` | **Field Worker Portal**: Participate in active search efforts and receive area alerts. |
-| **JOURNALIST** | `media@wajood.pk` | `Test1234!` | **Press Room**: Access public stats, trends, and verified report summaries. |
-| **GOVT OFFICIAL** | `govt@wajood.pk` | `Test1234!` | **coordination Portal (NDMA)**: National status dashboards, trigger emergency disaster alerts. |
-| **FORENSICS** | `forensics@wajood.pk` | `Test1234!` | **Labs Portal**: Manage biometric data, DNA profiling references, and dental scans. |
+### Backend Deployment (Render / Railway)
+1. Create a new Web Service pointing to the root `backend` folder.
+2. Select the Docker runtime or Python 3.11 environment.
+3. Attach a managed PostgreSQL database and Redis instance.
 
 ---
 
-## How to Test AI Matching
+## 🛠️ Technology Stack
 
-The system is equipped with an AI facial matching backend powered by **DeepFace** and **SQLAlchemy Vector Cosine Similarity**. Follow these steps to test the automatic match pipeline:
+*   **Frontend**: Next.js 14 (App Router), React 18, Tailwind CSS, Recharts, Lucide Icons, React Hook Form, Zod.
+*   **Backend**: Python 3.11, FastAPI, SQLAlchemy (AsyncIO), Pydantic v2, Passlib, PyJWT.
+*   **AI / Vision**: OpenCV, DeepFace / Face Recognition Embeddings, NumPy, Scikit-Learn.
+*   **DevOps**: Docker, Docker Compose, Nginx Reverse Proxy, MinIO Object Storage, Celery, Redis.
 
-### Step 1: Login and Upload a Case
-1. Open the **Frontend Portal** ([http://localhost:3000](http://localhost:3000)) or use the **Swagger API Docs** ([http://localhost:8000/docs](http://localhost:8000/docs)).
-2. Login as the Public Citizen (`public@wajood.pk`) to access the case registration tool.
-3. Register a new **Missing Person** record. Make sure to upload a clear face portrait image of the missing person. 
-   *(Alternatively, use the seeded case `Muhammad Bilal` (WJD-2024-KHI01) which already has a seeded Unsplash portrait photo).*
+---
 
-### Step 2: Upload a Sighting / Found Person Record
-1. Login as an NGO Worker (`ngo@wajood.pk`) or Hospital Doctor (`doctor@wajood.pk`).
-2. Register a new **Found Person** check-in record.
-3. Upload a face photo of the person found. For a successful match, upload the same picture (or a similar face picture) to simulate matching.
-4. The system automatically triggers face embedding extraction using **DeepFace** in the background.
+## 🎓 Academic Acknowledgment
 
-### Step 3: Trigger the AI Matching Engine
-1. Login as an FIA Officer (`officer@wajood.pk`) or Admin (`admin@wajood.pk`).
-2. Locate the registered case in the Investigation Portal.
-3. Click the **"Trigger AI Matching"** button on the case dashboard. 
-   * (API equivalent: Send a `POST` request to `/api/matching/trigger/{case_id}` with the UUID of the missing person case).
-4. The Celery worker runs the background task `run_ai_matching_task`, calculates vector cosine similarity between the missing person's face embedding and all found persons' embeddings, and records potential matches above the confidence threshold.
+**WAJOOD** was conceived, designed, and engineered as a Major Final Year Capstone Project (FYP) for the Department of Software Engineering, **Sir Syed University of Engineering and Technology (SSUET), Karachi — Class of 2026**.
 
-### Step 4: Review and Confirm Matches
-1. Refresh the Officer Portal to view the **Match Results**.
-2. Potential matches are ranked by confidence score.
-3. If a match is correct, the Officer clicks **"Confirm Match"**.
-   * (API equivalent: Send a `PATCH` request to `/api/matching/results/{match_id}/confirm`).
-4. Once confirmed, the system:
-   * Sets the match status to `CONFIRMED`.
-   * Dispatches a notification alert to the case's original reporter (Public Citizen).
-   * Generates a tamper-proof blockchain-style Audit Log chain entry for the record.
+*Dedicated to Edhi Foundation, Chhipa Welfare Association, and all brave search and rescue workers serving humanity across Pakistan.*
+
+---
+
+<div align="center">
+  <p>Released under the MIT License.</p>
+  <p>Made with ❤️ for Pakistan 🇵🇰</p>
+</div>
