@@ -50,23 +50,23 @@ export default function LandingPage() {
       <div className="mesh-gradient fixed inset-0 pointer-events-none" />
 
       {/* ── Navigation ── */}
-      <nav className="fixed top-0 inset-x-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/10 h-16 sm:h-20 flex items-center">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 w-full flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 no-underline">
-            <span className="text-2xl sm:text-3xl font-black gradient-text tracking-tighter">
+      <nav className="fixed top-0 inset-x-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/10 min-h-[64px] sm:h-20 flex items-center py-2 px-3 sm:px-6 md:px-8">
+        <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-2">
+          <Link href="/" className="flex items-center gap-1.5 no-underline shrink-0">
+            <span className="text-xl sm:text-3xl font-black gradient-text tracking-tighter">
               WAJOOD
             </span>
-            <span className="text-[10px] sm:text-xs font-bold text-slate-400 tracking-widest uppercase bg-white/5 px-2 py-0.5 rounded border border-white/10">
+            <span className="hidden sm:inline-block text-[10px] sm:text-xs font-bold text-slate-400 tracking-widest uppercase bg-white/5 px-2 py-0.5 rounded border border-white/10">
               Pakistan
             </span>
           </Link>
 
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Link href="/dashboard" className="btn-secondary px-3 sm:px-5 py-2 text-xs sm:text-sm min-h-[44px] flex items-center">
-              Dashboard
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+            <Link href="/dashboard" className="btn-secondary px-2.5 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm min-h-[38px] sm:min-h-[44px] flex items-center justify-center font-bold whitespace-nowrap">
+              <span>📊 <span className="hidden xs:inline">Dashboard</span></span>
             </Link>
-            <Link href="/public" className="btn-primary px-3 sm:px-5 py-2 text-xs sm:text-sm min-h-[44px] flex items-center">
-              <span>Explore Portals</span>
+            <Link href="/public" className="btn-primary px-3 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm min-h-[38px] sm:min-h-[44px] flex items-center justify-center font-bold whitespace-nowrap">
+              <span>🚀 <span className="inline sm:hidden">Portals</span><span className="hidden sm:inline">Explore Portals</span></span>
             </Link>
           </div>
         </div>

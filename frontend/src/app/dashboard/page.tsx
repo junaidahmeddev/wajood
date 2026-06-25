@@ -58,16 +58,16 @@ export default function DashboardPage() {
       <div className="mesh-gradient fixed inset-0 pointer-events-none" />
 
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/10 px-4 sm:px-6 md:px-8 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-3 sm:gap-6">
+      <nav className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/10 px-3 sm:px-6 md:px-8 min-h-[64px] flex items-center justify-between py-2 gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-6 shrink-0">
           <Link href="/" className="no-underline">
-            <span className="text-xl sm:text-2xl font-black gradient-text tracking-tight">WAJOOD</span>
+            <span className="text-lg sm:text-2xl font-black gradient-text tracking-tight">WAJOOD</span>
           </Link>
-          <span className="text-slate-500 text-xs sm:text-sm font-medium">/ Dashboard</span>
+          <span className="text-slate-500 text-xs sm:text-sm font-medium hidden sm:inline">/ Dashboard</span>
         </div>
-        <div className="flex items-center gap-2 sm:gap-4">
-          <Link href="/public" className="btn-secondary px-3 sm:px-4 py-1.5 text-xs sm:text-sm min-h-[40px] flex items-center font-semibold">
-            Explore Portals
+        <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
+          <Link href="/public" className="btn-secondary px-3 sm:px-4 py-1.5 text-xs sm:text-sm min-h-[38px] sm:min-h-[40px] flex items-center justify-center font-semibold whitespace-nowrap">
+            <span>🚀 <span className="inline sm:hidden">Portals</span><span className="hidden sm:inline">Explore Portals</span></span>
           </Link>
           <div className="hidden sm:flex items-center gap-2 bg-white/5 rounded-xl px-3.5 py-1.5 border border-white/5">
             <div className="w-2 h-2 rounded-full" style={{ background: getRoleColor(demoUser.role) }} />
