@@ -32,9 +32,9 @@ export default function CaseCard({ caseData, onViewMap, onViewDetails }: CaseCar
   }
 
   return (
-    <div className="glass-card flex flex-col h-full overflow-hidden transition-all duration-300 hover:scale-[1.02] border border-white/5 bg-white/[0.02]">
+    <div className="saas-card flex flex-col h-full overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-indigo-500/40 w-full">
       {/* Visual Header / Photo */}
-      <div className="relative h-48 bg-white/[0.01] border-b border-white/5 flex items-center justify-center overflow-hidden">
+      <div className="relative h-48 bg-white/[0.01] border-b border-white/5 flex items-center justify-center overflow-hidden shrink-0">
         {photo ? (
           <img
             src={photo.startsWith("http") ? photo : `http://localhost:8000${photo}`}
@@ -98,11 +98,11 @@ export default function CaseCard({ caseData, onViewMap, onViewDetails }: CaseCar
         </div>
 
         {/* Action Controls */}
-        <div className="mt-5 pt-4 border-t border-white/5 flex gap-2 justify-end">
+        <div className="mt-5 pt-4 border-t border-white/5 flex gap-2.5 items-center justify-end">
           {onViewMap && (
             <button
               onClick={() => onViewMap(caseData)}
-              className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs text-slate-300 font-semibold transition"
+              className="min-h-[44px] px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-slate-200 font-bold transition flex items-center justify-center flex-1 border border-white/5"
             >
               📍 Sighting Map
             </button>
@@ -110,7 +110,7 @@ export default function CaseCard({ caseData, onViewMap, onViewDetails }: CaseCar
           {onViewDetails && (
             <button
               onClick={() => onViewDetails(caseData)}
-              className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs text-white font-semibold transition"
+              className="min-h-[44px] px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs text-white font-bold transition flex items-center justify-center flex-1 shadow-md"
             >
               Details →
             </button>

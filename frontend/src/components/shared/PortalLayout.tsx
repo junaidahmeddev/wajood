@@ -59,13 +59,15 @@ export default function PortalLayout({ portalName, portalIcon, portalColor, allo
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="page-enter flex flex-col min-h-screen bg-slate-950 text-slate-100 overflow-x-hidden relative">
+    <div className="page-enter flex flex-col min-h-screen bg-slate-950 text-slate-100 overflow-x-hidden relative w-full max-w-full">
       {/* ─── STEP 4: FYP DEMO MODE BANNER ─── */}
-      <div style={{ background: "#1d4ed8", color: "white", textAlign: "center", padding: "8px", fontSize: "14px", fontWeight: "bold", zIndex: 100, position: "relative" }}>
-        🎓 FYP Demo Mode — WAJOOD: Pakistan&apos;s Missing Persons Platform | SSUET 2026 | All portals open for evaluation
+      <div className="bg-blue-600 text-white text-center py-2 px-3 text-xs sm:text-sm font-bold relative z-50 w-full shadow-md">
+        <p className="line-clamp-1 sm:line-clamp-none">
+          🎓 FYP Demo Mode — WAJOOD: Pakistan&apos;s Missing Persons Platform | SSUET 2026 | Evaluation Open
+        </p>
       </div>
 
-      <div className="flex flex-1 min-h-screen relative">
+      <div className="flex flex-col md:flex-row flex-1 min-h-screen relative w-full max-w-full">
         <div className="mesh-gradient fixed inset-0 pointer-events-none" />
 
         {/* ─── DESKTOP SIDEBAR ─── */}
@@ -153,18 +155,18 @@ export default function PortalLayout({ portalName, portalIcon, portalColor, allo
         )}
 
         {/* ─── MAIN CONTENT AREA ─── */}
-        <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full overflow-x-hidden relative z-10">
+        <main className="flex-1 px-3 sm:px-6 md:px-8 py-6 max-w-7xl mx-auto w-full max-w-full overflow-x-hidden relative z-10">
           {/* Portal Title Banner */}
-          <div className="mb-8 p-6 rounded-2xl bg-white/[0.02] border border-white/10 flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-2xl border border-white/10">
+          <div className="mb-6 sm:mb-8 p-4 sm:p-6 saas-card flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-white/5 flex items-center justify-center text-2xl border border-white/10 shrink-0">
                 {portalIcon}
               </div>
               <div>
-                <h1 className="text-2xl font-black tracking-tight text-white">
+                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white line-clamp-1">
                   {portalName} <span style={{ color: portalColor }}>Portal</span>
                 </h1>
-                <p className="text-xs text-slate-400 mt-0.5">Unified Nationwide Reunification Telemetry</p>
+                <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 line-clamp-1">Unified Nationwide Reunification Telemetry</p>
               </div>
             </div>
           </div>

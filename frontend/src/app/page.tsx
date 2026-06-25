@@ -37,7 +37,7 @@ const HOW_IT_WORKS = [
 ];
 
 export default function LandingPage() {
-  const { user, loadFromStorage } = useAuthStore();
+  const { loadFromStorage } = useAuthStore();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -46,33 +46,26 @@ export default function LandingPage() {
   }, [loadFromStorage]);
 
   return (
-    <div className="page-enter">
-      <div className="mesh-gradient" />
+    <div className="page-enter min-h-screen bg-slate-950 text-slate-100 overflow-x-hidden relative w-full">
+      <div className="mesh-gradient fixed inset-0 pointer-events-none" />
 
       {/* ── Navigation ── */}
-      <nav style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
-        background: "rgba(10, 10, 15, 0.8)", backdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
-      }}>
-        <div style={{
-          maxWidth: 1280, margin: "0 auto", padding: "0 24px",
-          display: "flex", alignItems: "center", justifyContent: "space-between", height: 72,
-        }}>
-          <Link href="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-0.02em" }} className="gradient-text">
+      <nav className="fixed top-0 inset-x-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/10 h-16 sm:h-20 flex items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 w-full flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 no-underline">
+            <span className="text-2xl sm:text-3xl font-black gradient-text tracking-tighter">
               WAJOOD
             </span>
-            <span style={{ fontSize: 11, color: "#64748b", letterSpacing: "0.1em", textTransform: "uppercase" }}>
+            <span className="text-[10px] sm:text-xs font-bold text-slate-400 tracking-widest uppercase bg-white/5 px-2 py-0.5 rounded border border-white/10">
               Pakistan
             </span>
           </Link>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <Link href="/dashboard" className="btn-secondary" style={{ padding: "8px 20px", fontSize: "0.85rem" }}>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link href="/dashboard" className="btn-secondary px-3 sm:px-5 py-2 text-xs sm:text-sm min-h-[44px] flex items-center">
               Dashboard
             </Link>
-            <Link href="/public" className="btn-primary" style={{ padding: "8px 20px", fontSize: "0.85rem" }}>
+            <Link href="/public" className="btn-primary px-3 sm:px-5 py-2 text-xs sm:text-sm min-h-[44px] flex items-center">
               <span>Explore Portals</span>
             </Link>
           </div>
@@ -80,149 +73,120 @@ export default function LandingPage() {
       </nav>
 
       {/* ── Hero Section ── */}
-      <section style={{
-        minHeight: "100vh", display: "flex", flexDirection: "column",
-        alignItems: "center", justifyContent: "center", textAlign: "center",
-        padding: "120px 24px 80px",
-      }}>
-        <div style={{
-          display: "inline-flex", alignItems: "center", gap: 8,
-          background: "rgba(99, 102, 241, 0.1)", border: "1px solid rgba(99, 102, 241, 0.2)",
-          borderRadius: 20, padding: "6px 16px", marginBottom: 32, fontSize: "0.85rem", color: "#818cf8",
-        }}>
-          <span className="pulse-dot" /> Live Platform — Operational Across All Provinces
+      <section className="pt-28 sm:pt-36 pb-16 sm:pb-24 px-4 sm:px-6 md:px-8 max-w-5xl mx-auto flex flex-col items-center text-center">
+        <div className="inline-flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-4 py-1.5 mb-6 text-xs sm:text-sm text-indigo-300 font-medium">
+          <span className="pulse-dot shrink-0" /> Operational Across All 4 Provinces &amp; AJK
         </div>
 
-        <h1 style={{
-          fontSize: "clamp(2.5rem, 6vw, 4.5rem)", fontWeight: 800,
-          lineHeight: 1.1, letterSpacing: "-0.03em", maxWidth: 800, marginBottom: 24,
-        }}>
-          Find the{" "}
-          <span className="gradient-text">Missing</span>
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight leading-[1.15] mb-6 max-w-4xl text-white">
+          Find the <span className="gradient-text">Missing</span>
           <br />
-          Reunite the{" "}
-          <span className="gradient-text">Found</span>
+          Reunite the <span className="gradient-text">Found</span>
         </h1>
 
-        <p style={{
-          fontSize: "clamp(1rem, 2vw, 1.25rem)", color: "#94a3b8",
-          maxWidth: 600, lineHeight: 1.7, marginBottom: 48,
-        }}>
-          Pakistan&apos;s first unified platform connecting families, law enforcement,
-          hospitals, NGOs, and volunteers through AI-powered matching and
-          multi-stakeholder coordination.
+        <p className="text-sm sm:text-base md:text-lg text-slate-300 max-w-2xl leading-relaxed mb-8 font-medium">
+          Pakistan&apos;s first unified AI biometric platform connecting families, law enforcement,
+          hospitals, NGOs, and citizen volunteers with real-time telemetric matching.
         </p>
 
-        <div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center" }}>
-          <Link href="/public" className="btn-primary" style={{ padding: "16px 40px", fontSize: "1.05rem" }}>
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full max-w-md sm:max-w-none justify-center">
+          <Link href="/public" className="btn-primary min-h-[48px] px-8 py-3.5 text-sm sm:text-base font-bold flex items-center justify-center shadow-lg shadow-indigo-500/25">
             <span>Report Missing Person →</span>
           </Link>
-          <Link href="/dashboard" className="btn-secondary" style={{ padding: "16px 40px", fontSize: "1.05rem" }}>
-            Search Database
+          <Link href="/dashboard" className="btn-secondary min-h-[48px] px-8 py-3.5 text-sm sm:text-base font-bold flex items-center justify-center">
+            Search National Database
           </Link>
         </div>
       </section>
 
       {/* ── Stats Bar ── */}
-      <section style={{ padding: "0 24px 80px" }}>
-        <div style={{
-          maxWidth: 1100, margin: "0 auto",
-          display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 20,
-        }}>
+      <section className="px-4 sm:px-6 md:px-8 pb-20 max-w-7xl mx-auto w-full">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 w-full">
           {STATS.map((s) => (
-            <div key={s.label} className="glass-card" style={{ padding: 24, textAlign: "center" }}>
-              <div style={{ fontSize: 32, marginBottom: 8 }}>{s.icon}</div>
-              <div style={{ fontSize: "2rem", fontWeight: 800, letterSpacing: "-0.02em" }} className="gradient-text stat-number">{s.value}</div>
-              <div style={{ fontSize: "0.85rem", color: "#64748b", marginTop: 4 }}>{s.label}</div>
+            <div key={s.label} className="saas-card p-4 sm:p-6 text-center flex flex-col items-center justify-center">
+              <span className="text-2xl sm:text-3xl mb-2">{s.icon}</span>
+              <span className="text-2xl sm:text-4xl font-extrabold gradient-text stat-number tracking-tight">{s.value}</span>
+              <span className="text-xs sm:text-sm font-semibold text-slate-400 mt-1">{s.label}</span>
             </div>
           ))}
         </div>
       </section>
 
       {/* ── How It Works ── */}
-      <section style={{ padding: "80px 24px", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <h2 style={{ textAlign: "center", fontSize: "2.5rem", fontWeight: 800, marginBottom: 16, letterSpacing: "-0.02em" }}>
+      <section className="py-16 sm:py-24 px-4 sm:px-6 md:px-8 border-t border-white/10 max-w-7xl mx-auto w-full">
+        <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
+          <h2 className="text-2xl sm:text-4xl font-extrabold mb-3 tracking-tight">
             How <span className="gradient-text">WAJOOD</span> Works
           </h2>
-          <p style={{ textAlign: "center", color: "#64748b", maxWidth: 500, margin: "0 auto 60px", fontSize: "1.05rem" }}>
-            A streamlined process from report to reunification
+          <p className="text-sm sm:text-base text-slate-400">
+            A nationwide tamper-proof audit workflow from report to reunification
           </p>
+        </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 24 }}>
-            {HOW_IT_WORKS.map((item) => (
-              <div key={item.step} className="glass-card" style={{ padding: 32 }}>
-                <div style={{
-                  fontSize: "3rem", fontWeight: 900, lineHeight: 1,
-                  background: "linear-gradient(135deg, rgba(99,102,241,0.3), rgba(139,92,246,0.1))",
-                  WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-                  marginBottom: 16,
-                }}>{item.step}</div>
-                <h3 style={{ fontSize: "1.25rem", fontWeight: 700, marginBottom: 8 }}>{item.title}</h3>
-                <p style={{ color: "#94a3b8", fontSize: "0.9rem", lineHeight: 1.6 }}>{item.desc}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 w-full">
+          {HOW_IT_WORKS.map((item) => (
+            <div key={item.step} className="saas-card p-6 flex flex-col justify-between">
+              <div>
+                <div className="text-4xl sm:text-5xl font-black bg-gradient-to-br from-indigo-400 to-purple-600 bg-clip-text text-transparent mb-4 opacity-40 font-mono">
+                  {item.step}
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold mb-2 text-white">{item.title}</h3>
+                <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">{item.desc}</p>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* ── Portals Grid ── */}
-      <section style={{ padding: "80px 24px", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <h2 style={{ textAlign: "center", fontSize: "2.5rem", fontWeight: 800, marginBottom: 16, letterSpacing: "-0.02em" }}>
+      <section className="py-16 sm:py-24 px-4 sm:px-6 md:px-8 border-t border-white/10 max-w-7xl mx-auto w-full">
+        <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
+          <h2 className="text-2xl sm:text-4xl font-extrabold mb-3 tracking-tight">
             🎯 Explore WAJOOD — <span className="gradient-text">Click Any Portal</span>
           </h2>
-          <p style={{ textAlign: "center", color: "#64748b", maxWidth: 500, margin: "0 auto 60px", fontSize: "1.05rem" }}>
-            Purpose-built interfaces for every evaluation role without login barriers
+          <p className="text-sm sm:text-base text-slate-400">
+            Purpose-built telemetric interfaces for every evaluation role without login barriers
           </p>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {PORTALS.map((p) => (
-              <Link key={p.title} href={p.href} style={{ textDecoration: "none", color: "inherit" }}>
-                <div className="glass-card p-6 h-full flex flex-col justify-between hover:border-emerald-500/50 hover:bg-emerald-500/[0.02] transition duration-300 group">
-                  <div>
-                    <div style={{ fontSize: 36, marginBottom: 16 }}>{p.icon}</div>
-                    <h3 className="text-xl font-bold text-white group-hover:text-emerald-400 transition mb-2">{p.title}</h3>
-                    <p className="text-slate-400 text-sm leading-relaxed">{p.desc}</p>
-                  </div>
-                  <div className="mt-6 text-sm font-bold text-emerald-400 flex items-center gap-2 group-hover:translate-x-1 transition">
-                    Open Portal →
-                  </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 w-full">
+          {PORTALS.map((p) => (
+            <Link key={p.title} href={p.href} className="no-underline text-inherit block group">
+              <div className="saas-card p-6 h-full flex flex-col justify-between group-hover:border-indigo-500/50 transition-all duration-300">
+                <div>
+                  <div className="text-3xl sm:text-4xl mb-4">{p.icon}</div>
+                  <h3 className="text-lg sm:text-xl font-bold text-white group-hover:text-indigo-400 transition mb-2">{p.title}</h3>
+                  <p className="text-slate-400 text-xs sm:text-sm leading-relaxed">{p.desc}</p>
                 </div>
-              </Link>
-            ))}
-          </div>
+                <div className="mt-6 text-xs sm:text-sm font-bold text-indigo-400 flex items-center gap-1.5 group-hover:translate-x-1 transition-transform">
+                  Open Portal →
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
 
       {/* ── CTA Section ── */}
-      <section style={{
-        padding: "100px 24px", textAlign: "center",
-        borderTop: "1px solid rgba(255,255,255,0.04)",
-      }}>
-        <h2 style={{ fontSize: "2.5rem", fontWeight: 800, marginBottom: 16, letterSpacing: "-0.02em" }}>
+      <section className="py-20 sm:py-28 px-4 text-center border-t border-white/10 max-w-4xl mx-auto">
+        <h2 className="text-3xl sm:text-5xl font-extrabold mb-4 tracking-tight">
           Every Second <span className="gradient-text">Matters</span>
         </h2>
-        <p style={{ color: "#94a3b8", maxWidth: 500, margin: "0 auto 40px", fontSize: "1.1rem", lineHeight: 1.7 }}>
-          Join thousands of Pakistanis working together to bring missing persons home.
+        <p className="text-sm sm:text-base md:text-lg text-slate-300 max-w-xl mx-auto leading-relaxed mb-8">
+          Join thousands of Pakistani citizens, volunteers, and rescue officers bringing missing persons home.
         </p>
-        <Link href="/register" className="btn-primary" style={{ padding: "18px 48px", fontSize: "1.1rem" }}>
-          <span>Join WAJOOD Today →</span>
+        <Link href="/public" className="btn-primary min-h-[52px] px-10 py-4 text-base font-bold inline-flex items-center justify-center shadow-xl shadow-indigo-500/25">
+          <span>Explore Citizen Portal Now →</span>
         </Link>
       </section>
 
       {/* ── Footer ── */}
-      <footer style={{
-        padding: "40px 24px", borderTop: "1px solid rgba(255,255,255,0.06)",
-        textAlign: "center",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 12 }}>
-          <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-0.02em" }} className="gradient-text">WAJOOD</span>
+      <footer className="py-10 px-4 border-t border-white/10 text-center text-xs sm:text-sm text-slate-500">
+        <div className="flex items-center justify-center gap-2 mb-3">
+          <span className="text-xl font-black gradient-text">WAJOOD</span>
+          <span>• National Reunification Grid</span>
         </div>
-        <p style={{ color: "#475569", fontSize: "0.8rem" }}>
-          © {new Date().getFullYear()} WAJOOD — Pakistan&apos;s Unified Missing Persons Platform.
-          Built with purpose.
-        </p>
+        <p>© {new Date().getFullYear()} WAJOOD Pakistan. Built for SSUET FYP 2026 Evaluation.</p>
       </footer>
     </div>
   );

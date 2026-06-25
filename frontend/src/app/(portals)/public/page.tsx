@@ -193,35 +193,35 @@ export default function PublicPortal() {
         </div>
 
         {/* ─── 3 Stat Boxes ─── */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-5xl mx-auto px-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto w-full">
           {[
             { label: "Total Missing Reported", val: (stats as any)?.active_cases ?? (stats as any)?.total_cases ?? 0, icon: "🚨", color: "from-red-500/20 to-rose-950/20", border: "border-red-500/30", textColor: "text-red-400" },
             { label: "Found / Resolved", val: (stats as any)?.resolved_cases ?? 0, icon: "🛡️", color: "from-emerald-500/20 to-teal-950/20", border: "border-emerald-500/30", textColor: "text-emerald-400" },
             { label: "AI Biometric Matches", val: (stats as any)?.total_matches ?? 0, icon: "⚡", color: "from-amber-500/20 to-yellow-950/20", border: "border-amber-500/30", textColor: "text-amber-400" },
           ].map((box) => (
-            <div key={box.label} className={`glass-card p-6 bg-gradient-to-br ${box.color} border ${box.border} relative overflow-hidden shadow-xl hover:scale-105 transition duration-300`}>
-              <div className="flex justify-between items-start mb-4">
-                <span className="text-3xl">{box.icon}</span>
+            <div key={box.label} className={`saas-card p-5 sm:p-6 bg-gradient-to-br ${box.color} border ${box.border} relative overflow-hidden shadow-xl transition duration-300`}>
+              <div className="flex justify-between items-start mb-3">
+                <span className="text-2xl sm:text-3xl">{box.icon}</span>
                 <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Live Metrics</span>
               </div>
-              <div className={`text-4xl font-extrabold ${box.textColor} mb-1 font-mono`}>{box.val}</div>
+              <div className={`text-3xl sm:text-4xl font-extrabold ${box.textColor} mb-1 font-mono`}>{box.val}</div>
               <div className="text-xs font-bold text-slate-300">{box.label}</div>
             </div>
           ))}
         </div>
 
         {/* ─── Action Controls Bar ─── */}
-        <div className="max-w-6xl mx-auto px-4 flex flex-wrap items-center justify-between gap-4 border-y border-white/10 py-6 bg-black/40 backdrop-blur-md rounded-2xl">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 border-y border-white/10 py-4 sm:py-6 saas-card px-4 sm:px-6">
           <button
             onClick={() => { setShowReportForm(!showReportForm); setTrackingCase(null); }}
-            className={`px-8 py-4 rounded-xl font-bold text-sm shadow-lg flex items-center gap-3 transition hover:scale-105 ${showReportForm ? "bg-slate-800 text-slate-300 hover:bg-slate-700 border border-white/10" : "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-emerald-500/20"}`}
+            className={`w-full sm:w-auto min-h-[48px] px-6 py-3.5 rounded-xl font-bold text-xs sm:text-sm shadow-lg flex items-center justify-center gap-2.5 transition shrink-0 ${showReportForm ? "bg-slate-800 text-slate-300 hover:bg-slate-700 border border-white/10" : "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-emerald-500/20"}`}
             id="public-toggle-report-btn"
           >
-            <span className="text-lg">{showReportForm ? "📂" : "🚨"}</span>
-            <span>{showReportForm ? "Return to Active Registry Feed" : "Report Missing Person (قومی گمشدہ رپورٹ)"}</span>
+            <span className="text-lg shrink-0">{showReportForm ? "📂" : "🚨"}</span>
+            <span className="truncate">{showReportForm ? "Return to Active Feed" : "Report Missing Person (قومی گمشدہ رپورٹ)"}</span>
           </button>
 
-          <div className="flex items-center gap-4 w-full sm:w-auto">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
             <CityFilter value={filterCity} onChange={(c) => setFilterCity(c)} />
           </div>
         </div>
@@ -392,11 +392,11 @@ export default function PublicPortal() {
           </div>
         ) : (
           /* Main Citizen Portal Layout */
-          <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
             
             {/* ─── Track My Case Sidebar ─── */}
-            <div className="space-y-6 lg:col-span-1">
-              <div className="glass-card p-6 border-emerald-500/30 bg-gradient-to-b from-emerald-950/20 to-black/40 shadow-xl">
+            <div className="space-y-6 lg:col-span-1 w-full">
+              <div className="saas-card p-6 border-emerald-500/30 bg-gradient-to-b from-emerald-950/20 to-black/40 shadow-xl">
                 <h3 className="text-lg font-extrabold text-emerald-400 mb-2 flex items-center gap-2">
                   <span>🔍 Track My Case</span>
                 </h3>
@@ -410,12 +410,12 @@ export default function PublicPortal() {
                     placeholder="WJD-2026-XXXXX"
                     value={trackingNumber}
                     onChange={(e) => setTrackingNumber(e.target.value)}
-                    className="form-input font-mono text-center text-sm tracking-widest text-emerald-300 bg-black/50 border-emerald-500/30 focus:border-emerald-400 font-bold uppercase"
+                    className="form-input font-mono text-center text-sm tracking-widest text-emerald-300 bg-black/50 border-emerald-500/30 focus:border-emerald-400 font-bold uppercase min-h-[44px]"
                   />
                   <button
                     type="submit"
                     disabled={isTrackingLoading}
-                    className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition"
+                    className="w-full min-h-[44px] py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition flex items-center justify-center"
                   >
                     {isTrackingLoading ? "Decrypting Folder..." : "Track Live Status"}
                   </button>
@@ -430,7 +430,7 @@ export default function PublicPortal() {
 
               {/* Loaded Case Tracker Folder */}
               {trackingCase && (
-                <div className="glass-card p-6 border-emerald-500/40 space-y-4 animate-fadeIn bg-black/60">
+                <div className="saas-card p-6 border-emerald-500/40 space-y-4 animate-fadeIn bg-black/60">
                   <div className="flex justify-between items-center pb-3 border-b border-white/10">
                     <span className="text-xs font-mono font-bold text-emerald-400">{trackingCase.case_number}</span>
                     <span className="badge badge-medium text-[10px] uppercase">{trackingCase.status}</span>
@@ -451,13 +451,13 @@ export default function PublicPortal() {
             </div>
 
             {/* ─── Recent Cases Feed Grid ─── */}
-            <div className="lg:col-span-2 space-y-6">
-              <div className="flex justify-between items-center border-b border-white/10 pb-4">
+            <div className="lg:col-span-2 space-y-6 w-full">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 border-b border-white/10 pb-4">
                 <div>
-                  <h2 className="text-xl font-black text-white">Active National Registry Feed</h2>
+                  <h2 className="text-lg sm:text-xl font-black text-white">Active National Registry Feed</h2>
                   <p className="text-xs text-slate-400">Real-time verified missing citizen broadcast cards</p>
                 </div>
-                <span className="text-xs font-mono px-3 py-1 bg-white/5 rounded-full text-slate-300">
+                <span className="text-xs font-mono px-3 py-1 bg-white/5 rounded-full text-slate-300 self-start sm:self-auto border border-white/10">
                   Showing {casesList.length} alerts
                 </span>
               </div>
@@ -467,7 +467,7 @@ export default function PublicPortal() {
               ) : casesList.length === 0 ? (
                 <EmptyState title="No cases found" icon="📂" description="No active missing citizen records matching specified search filters." />
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 w-full">
                   {casesList.map((c: Case) => (
                     <CaseCard
                       key={c.id}

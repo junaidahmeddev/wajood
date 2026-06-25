@@ -47,127 +47,117 @@ export default function DashboardPage() {
   ] : [];
 
   return (
-    <div className="page-enter" style={{ minHeight: "100vh" }}>
+    <div className="page-enter min-h-screen bg-slate-950 text-slate-100 overflow-x-hidden relative w-full">
       {/* ─── STEP 4: FYP DEMO MODE BANNER ─── */}
-      <div style={{ background: "#1d4ed8", color: "white", textAlign: "center", padding: "8px", fontSize: "14px", fontWeight: "bold", zIndex: 100, position: "relative" }}>
-        🎓 FYP Demo Mode — WAJOOD: Pakistan&apos;s Missing Persons Platform | SSUET 2026 | All portals open for evaluation
+      <div className="bg-blue-600 text-white text-center py-2 px-3 text-xs sm:text-sm font-bold relative z-50 w-full shadow-md">
+        <p className="line-clamp-1 sm:line-clamp-none">
+          🎓 FYP Demo Mode — WAJOOD: Pakistan&apos;s Missing Persons Platform | SSUET 2026 | Evaluation Open
+        </p>
       </div>
 
-      <div className="mesh-gradient" />
+      <div className="mesh-gradient fixed inset-0 pointer-events-none" />
 
       {/* Nav */}
-      <nav style={{
-        position: "sticky", top: 0, zIndex: 50,
-        background: "rgba(10, 10, 15, 0.85)", backdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
-        padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 64,
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-          <Link href="/" style={{ textDecoration: "none" }}>
-            <span style={{ fontSize: 22, fontWeight: 800 }} className="gradient-text">WAJOOD</span>
+      <nav className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/10 px-4 sm:px-6 md:px-8 h-16 flex items-center justify-between">
+        <div className="flex items-center gap-3 sm:gap-6">
+          <Link href="/" className="no-underline">
+            <span className="text-xl sm:text-2xl font-black gradient-text tracking-tight">WAJOOD</span>
           </Link>
-          <span style={{ color: "#475569", fontSize: "0.8rem" }}>/ Dashboard</span>
+          <span className="text-slate-500 text-xs sm:text-sm font-medium">/ Dashboard</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <Link href="/public" className="btn-secondary" style={{ padding: "6px 16px", fontSize: "0.8rem" }}>
+        <div className="flex items-center gap-2 sm:gap-4">
+          <Link href="/public" className="btn-secondary px-3 sm:px-4 py-1.5 text-xs sm:text-sm min-h-[40px] flex items-center font-semibold">
             Explore Portals
           </Link>
-          <div style={{
-            display: "flex", alignItems: "center", gap: 8,
-            background: "rgba(255,255,255,0.05)", borderRadius: 10, padding: "6px 14px",
-          }}>
-            <div style={{
-              width: 8, height: 8, borderRadius: "50%",
-              background: getRoleColor(demoUser.role),
-            }} />
-            <span style={{ fontSize: "0.8rem", color: "#94a3b8" }}>{demoUser.full_name}</span>
+          <div className="hidden sm:flex items-center gap-2 bg-white/5 rounded-xl px-3.5 py-1.5 border border-white/5">
+            <div className="w-2 h-2 rounded-full" style={{ background: getRoleColor(demoUser.role) }} />
+            <span className="text-xs text-slate-300 font-semibold truncate max-w-[120px]">{demoUser.full_name}</span>
           </div>
         </div>
       </nav>
 
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px" }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-10">
         {/* Welcome */}
-        <div style={{ marginBottom: 40 }}>
-          <h1 style={{ fontSize: "2rem", fontWeight: 800, marginBottom: 8, letterSpacing: "-0.02em" }}>
+        <div className="mb-8 sm:mb-10">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black mb-2 tracking-tight">
             Welcome back, <span className="gradient-text">{demoUser.full_name.split(" ")[0]}</span>
           </h1>
-          <p style={{ color: "#64748b", fontSize: "0.95rem" }}>
-            Here&apos;s an overview of the WAJOOD platform
+          <p className="text-slate-400 text-xs sm:text-sm font-medium">
+            Here&apos;s a live overview of the nationwide WAJOOD reunification telemetry
           </p>
         </div>
 
         {/* Stats Grid */}
         {loading ? (
-          <div style={{ textAlign: "center", padding: 60, color: "#64748b" }}>Loading dashboard data...</div>
+          <div className="text-center py-16 text-slate-400 font-medium">Loading national metrics...</div>
         ) : (
           <>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16, marginBottom: 40 }}>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-8 sm:mb-10 w-full">
               {statCards.map((s) => (
-                <div key={s.label} className="glass-card" style={{ padding: 24 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                    <span style={{ fontSize: 28 }}>{s.icon}</span>
-                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: s.color, opacity: 0.6 }} />
+                <div key={s.label} className="saas-card p-4 sm:p-5 flex flex-col justify-between">
+                  <div className="flex justify-between items-start mb-3">
+                    <span className="text-2xl">{s.icon}</span>
+                    <div className="w-2 h-2 rounded-full opacity-70 shrink-0" style={{ background: s.color }} />
                   </div>
-                  <div style={{ fontSize: "1.8rem", fontWeight: 800, letterSpacing: "-0.02em" }} className="stat-number">
+                  <div className="text-xl sm:text-2xl font-black font-mono tracking-tight stat-number text-white truncate">
                     {s.value}
                   </div>
-                  <div style={{ fontSize: "0.8rem", color: "#64748b", marginTop: 4 }}>{s.label}</div>
+                  <div className="text-[11px] sm:text-xs font-semibold text-slate-400 mt-1 truncate">{s.label}</div>
                 </div>
               ))}
             </div>
 
             {/* Recent Cases */}
-            <div className="glass-card" style={{ padding: 0, overflow: "hidden" }}>
-              <div style={{
-                padding: "20px 24px", borderBottom: "1px solid rgba(255,255,255,0.06)",
-                display: "flex", justifyContent: "space-between", alignItems: "center",
-              }}>
-                <h2 style={{ fontSize: "1.15rem", fontWeight: 700 }}>Recent Cases</h2>
-                <Link href={getPortalPath(demoUser.role)} style={{ color: "#818cf8", fontSize: "0.85rem", textDecoration: "none" }}>
-                  View All →
+            <div className="saas-card overflow-hidden">
+              <div className="p-4 sm:p-6 border-b border-white/10 flex justify-between items-center bg-white/[0.01]">
+                <h2 className="text-base sm:text-lg font-bold text-white">Recent National Case Records</h2>
+                <Link href={getPortalPath(demoUser.role)} className="text-indigo-400 hover:text-indigo-300 text-xs sm:text-sm font-bold no-underline transition">
+                  View All Feed →
                 </Link>
               </div>
 
               {recentCases.length === 0 ? (
-                <div style={{ padding: 40, textAlign: "center", color: "#64748b" }}>
-                  No cases yet. Be the first to report.
+                <div className="p-10 text-center text-slate-500 text-sm">
+                  No cases registered in telemetric logs yet. Be the first to report.
                 </div>
               ) : (
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Case #</th>
-                      <th>Title</th>
-                      <th>Status</th>
-                      <th>Priority</th>
-                      <th>Location</th>
-                      <th>Filed</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentCases.map((c) => (
-                      <tr key={c.id}>
-                        <td style={{ fontFamily: "monospace", fontSize: "0.85rem", color: "#818cf8" }}>{c.case_number}</td>
-                        <td style={{ fontWeight: 500 }}>{c.title}</td>
-                        <td>
-                          <span className="badge" style={{
-                            background: `${getStatusColor(c.status)}20`,
-                            color: getStatusColor(c.status),
-                          }}>
-                            {getStatusLabel(c.status)}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={`badge badge-${c.priority}`}>{c.priority}</span>
-                        </td>
-                        <td style={{ color: "#94a3b8", fontSize: "0.85rem" }}>
-                          {c.last_seen_district || c.last_seen_province || "—"}
-                        </td>
-                        <td style={{ color: "#64748b", fontSize: "0.85rem" }}>{timeAgo(c.created_at)}</td>
+                <div className="overflow-x-auto w-full">
+                  <table className="data-table w-full text-left border-collapse min-w-[600px]">
+                    <thead>
+                      <tr className="border-b border-white/5 bg-white/[0.02]">
+                        <th className="p-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider">Case #</th>
+                        <th className="p-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider">Subject Name</th>
+                        <th className="p-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                        <th className="p-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider">Priority</th>
+                        <th className="p-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider">Location</th>
+                        <th className="p-3.5 text-xs font-bold text-slate-400 uppercase tracking-wider">Filed</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {recentCases.map((c) => (
+                        <tr key={c.id} className="hover:bg-white/[0.02] transition">
+                          <td className="p-3.5 font-mono text-xs font-bold text-indigo-400">{c.case_number}</td>
+                          <td className="p-3.5 text-xs sm:text-sm font-semibold text-slate-200">{c.person?.full_name || c.title || "Unknown"}</td>
+                          <td className="p-3.5">
+                            <span className="badge text-[10px] font-bold px-2 py-0.5 rounded-full uppercase" style={{
+                              background: `${getStatusColor(c.status)}20`,
+                              color: getStatusColor(c.status),
+                            }}>
+                              {getStatusLabel(c.status)}
+                            </span>
+                          </td>
+                          <td className="p-3.5">
+                            <span className={`badge badge-${c.priority?.toLowerCase() || "medium"} text-[10px] uppercase font-bold`}>{c.priority || "MEDIUM"}</span>
+                          </td>
+                          <td className="p-3.5 text-xs text-slate-400 truncate max-w-[150px]">
+                            {c.last_seen_district || c.last_seen_province || c.last_seen_city || "—"}
+                          </td>
+                          <td className="p-3.5 text-xs text-slate-500 whitespace-nowrap">{timeAgo(c.created_at)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           </>

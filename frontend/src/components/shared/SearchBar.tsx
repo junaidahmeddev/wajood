@@ -79,9 +79,9 @@ export default function SearchBar({ onSearchSubmit, onSelectCase, placeholder = 
   };
 
   return (
-    <div className="relative w-full max-w-xl" ref={dropdownRef}>
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <div className="relative flex-1">
+    <div className="relative w-full max-w-xl mx-auto" ref={dropdownRef}>
+      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2.5 w-full">
+        <div className="relative flex-1 w-full">
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
           <input
             type="text"
@@ -89,7 +89,7 @@ export default function SearchBar({ onSearchSubmit, onSelectCase, placeholder = 
             onChange={handleInputChange}
             onFocus={() => setShowDropdown(true)}
             placeholder={placeholder}
-            className="form-input pl-11"
+            className="form-input pl-11 w-full min-h-[44px]"
             id="global-search-bar"
           />
           {loading && (
@@ -98,7 +98,7 @@ export default function SearchBar({ onSearchSubmit, onSelectCase, placeholder = 
             </span>
           )}
         </div>
-        <button type="submit" className="btn-primary px-6 py-2.5">
+        <button type="submit" className="btn-primary min-h-[44px] px-6 py-2.5 w-full sm:w-auto shrink-0 flex items-center justify-center font-bold">
           <span>Search</span>
         </button>
       </form>
