@@ -11,6 +11,7 @@ import { useAuthStore } from "@/store";
 import { getPortalPath } from "@/lib/auth";
 import { UserRole } from "@/types";
 import { PAKISTAN_PROVINCES } from "@/lib/utils";
+import { useToast } from "@/components/shared/Toast";
 
 const ROLES: { value: UserRole; label: string }[] = [
   { value: "PUBLIC", label: "Public Citizen" },
@@ -44,7 +45,7 @@ type RegisterFields = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { setAuth } = useAuthStore();
+  const { toast } = useToast();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const FALLBACK_ORGS = [
@@ -85,10 +86,14 @@ export default function RegisterPage() {
         ...payload,
         role: payload.role as UserRole,
       });
-      setAuth(res.user, res.access_token);
-      router.push(getPortalPath(res.user.role));
+      toast.success("Account created! Please login");
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Registration failed");
+      const errMsg = err instanceof Error ? err.message : "Registration failed";
+      setError(errMsg);
+      toast.error(errMsg);
     } finally {
       setLoading(false);
     }
