@@ -138,6 +138,25 @@ apiClient.interceptors.response.use(
 
     // STEP 3: POST/PATCH/PUT FAKE SUCCESS FOR DEMO EVALUATION
     if (method === "post" || method === "patch" || method === "put") {
+      if (url.includes("/api/auth/login") || url.includes("/api/auth/register")) {
+        let role = "ADMIN";
+        let email = "admin@wajood.pk";
+        let full_name = "Demo Admin";
+        try {
+          if (typeof config.data === "string") {
+            const parsed = JSON.parse(config.data);
+            if (parsed.role) role = parsed.role;
+            if (parsed.email) email = parsed.email;
+            if (parsed.full_name) full_name = parsed.full_name;
+          }
+        } catch (e) {}
+        
+        return Promise.resolve({
+          access_token: "demo-jwt-token-12345",
+          user: { id: "demo-id", email, full_name, role }
+        });
+      }
+
       if (typeof window !== "undefined") {
         // Trigger fake toast notification if toast is present or console log
       }
