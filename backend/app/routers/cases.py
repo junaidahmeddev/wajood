@@ -160,6 +160,7 @@ async def list_cases(
     city: Optional[str] = None,
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
+    search: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
@@ -178,6 +179,12 @@ async def list_cases(
     if not has_read_all and has_read_own and not has_read_public:
         query = query.filter(MissingPerson.reported_by == user.id)
 
+    if search:
+        query = query.filter(
+            (MissingPerson.case_number.ilike(f"%{search}%")) |
+            (MissingPerson.full_name.ilike(f"%{search}%")) |
+            (MissingPerson.cnic.ilike(f"%{search}%"))
+        )
     if status_filter:
         query = query.filter(MissingPerson.status == status_filter)
     if city:
