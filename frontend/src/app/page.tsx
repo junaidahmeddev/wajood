@@ -17,15 +17,15 @@ const STATS = [
 ];
 
 const PORTALS = [
-  { title: "Public Citizen", desc: "Report a missing person", icon: "👤", color: "#6366f1", href: "/public" },
-  { title: "NGO Worker", desc: "Register found persons & view AI matches", icon: "🏢", color: "#10b981", href: "/ngo" },
-  { title: "Law Enforcement", desc: "Confirm matches & manage cases", icon: "👮", color: "#3b82f6", href: "/law-enforcement" },
-  { title: "Hospital/Morgue", desc: "Register unidentified patients", icon: "🏥", color: "#f59e0b", href: "/hospital" },
-  { title: "Volunteer", desc: "Report sightings on map", icon: "🙋", color: "#8b5cf6", href: "/volunteer" },
-  { title: "Media", desc: "View anonymized statistics", icon: "📰", color: "#ec4899", href: "/media" },
-  { title: "Government/NDMA", desc: "National dashboard & disaster mode", icon: "🏛️", color: "#14b8a6", href: "/government" },
-  { title: "Forensics", desc: "DNA matching & biometric records", icon: "🔬", color: "#f97316", href: "/forensics" },
-  { title: "Admin", desc: "Full system administration", icon: "⚙️", color: "#ef4444", href: "/admin" },
+  { title: "Public Citizen", desc: "Report a missing person", icon: "👤", color: "#6366f1", href: "/login" },
+  { title: "NGO Worker", desc: "Register found persons", icon: "🏢", color: "#10b981", href: "/login" },
+  { title: "Law Enforcement", desc: "Confirm matches and manage cases", icon: "👮", color: "#3b82f6", href: "/login" },
+  { title: "Hospital/Morgue", desc: "Register unidentified patients", icon: "🏥", color: "#f59e0b", href: "/login" },
+  { title: "Volunteer", desc: "Report sightings on map", icon: "🙋", color: "#8b5cf6", href: "/login" },
+  { title: "Media", desc: "View anonymized statistics", icon: "📰", color: "#ec4899", href: "/login" },
+  { title: "Government/NDMA", desc: "National dashboard and disaster mode", icon: "🏛️", color: "#14b8a6", href: "/login" },
+  { title: "Forensics", desc: "DNA matching and biometric records", icon: "🔬", color: "#f97316", href: "/login" },
+  { title: "Admin", desc: "Full system administration", icon: "⚙️", color: "#ef4444", href: "/login" },
 ];
 
 const HOW_IT_WORKS = [
@@ -71,11 +71,11 @@ export default function LandingPage() {
 
           {/* Desktop Nav Buttons */}
           <div className="hidden md:flex items-center gap-4 shrink-0 h-full">
-            <Link href="/dashboard" className="btn-secondary px-5 py-2 text-sm min-h-[40px] flex items-center justify-center font-bold">
-              Dashboard
+            <Link href="/login" className="btn-secondary px-5 py-2 text-sm min-h-[40px] flex items-center justify-center font-bold border border-white/20 text-slate-200 hover:text-white">
+              Login
             </Link>
-            <Link href="/public" className="btn-primary px-5 py-2 text-sm min-h-[40px] flex items-center justify-center font-bold">
-              Explore Portals
+            <Link href="/register" className="btn-primary px-5 py-2 text-sm min-h-[40px] flex items-center justify-center font-bold">
+              Register
             </Link>
           </div>
 
@@ -97,11 +97,11 @@ export default function LandingPage() {
       {/* Mobile Dropdown Drawer Menu Box */}
       {mobileNavOpen && (
         <div className="md:hidden fixed inset-x-0 top-[72px] z-40 bg-slate-900/95 border-b border-white/10 p-5 shadow-2xl backdrop-blur-2xl animate-fadeIn flex flex-col gap-3">
-          <Link onClick={() => setMobileNavOpen(false)} href="/dashboard" className="btn-secondary w-full py-3 text-center font-bold block flex items-center justify-center">
-            National Dashboard
+          <Link onClick={() => setMobileNavOpen(false)} href="/login" className="btn-secondary w-full py-3 text-center font-bold block flex items-center justify-center border border-white/20 text-slate-200">
+            Login
           </Link>
-          <Link onClick={() => setMobileNavOpen(false)} href="/public" className="btn-primary w-full py-3 text-center font-bold block flex items-center justify-center">
-            Explore All Portals →
+          <Link onClick={() => setMobileNavOpen(false)} href="/register" className="btn-primary w-full py-3 text-center font-bold block flex items-center justify-center">
+            Register
           </Link>
         </div>
       )}
@@ -115,10 +115,14 @@ export default function LandingPage() {
             <span className="pulse-dot shrink-0" /> Operational Across All 4 Provinces &amp; AJK
           </div>
 
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight leading-[1.15] mb-6 w-full text-white flex flex-col items-center justify-center">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight leading-[1.15] mb-4 w-full text-white flex flex-col items-center justify-center">
             <span>Find the <span className="gradient-text">Missing</span></span>
             <span>Reunite the <span className="gradient-text">Found</span></span>
           </h1>
+
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-300 mb-6 font-serif" dir="rtl">
+            پاکستان کا متحدہ پلیٹ فارم برائے گمشدہ افراد
+          </h2>
 
           <p className="text-sm sm:text-base md:text-lg text-slate-300 max-w-[560px] mx-auto leading-[1.6] mb-8 font-medium">
             Pakistan&apos;s first unified AI biometric platform connecting families, law enforcement,
