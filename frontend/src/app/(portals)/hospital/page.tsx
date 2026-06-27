@@ -347,9 +347,15 @@ export default function HospitalPortal() {
                 <button
                   type="submit"
                   disabled={registerPatientMutation.isPending}
-                  className="btn-primary px-6 py-2.5"
+                  className="btn-primary px-6 py-2.5 flex items-center gap-2"
                   style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)" }}
                 >
+                  {registerPatientMutation.isPending && (
+                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  )}
                   <span>{registerPatientMutation.isPending ? "Submitting..." : "Log Patient"}</span>
                 </button>
               </div>
@@ -362,7 +368,7 @@ export default function HospitalPortal() {
           <div className="space-y-6">
             <h3 className="text-lg font-bold text-slate-200">Deceased Cold Storage Registry</h3>
             {deceasedPatients.length === 0 ? (
-              <div className="glass-card p-12 text-center text-slate-500">No morgue records registered.</div>
+              <EmptyState title="No Morgue Records" icon="💀" description="No deceased individuals registered in cold storage." />
             ) : (
               <div className="glass-card overflow-hidden">
                 <table className="w-full text-left border-collapse text-xs text-slate-300">
@@ -405,9 +411,7 @@ export default function HospitalPortal() {
             </p>
 
             {matchNotifications.length === 0 ? (
-              <div className="text-center py-8 text-slate-500 text-xs font-semibold">
-                No active biometric matches logged for this facility.
-              </div>
+              <EmptyState title="No Alerts" icon="🔔" description="No active biometric matches logged for this facility." />
             ) : (
               <div className="space-y-3">
                 {matchNotifications.map((notif: Notification) => (

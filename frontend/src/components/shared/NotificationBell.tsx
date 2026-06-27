@@ -157,11 +157,11 @@ export default function NotificationBell() {
 
       {/* Dropdown Overlay List (Guaranteed Solid Opaque) */}
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-80 sm:w-96 max-h-[80vh] bg-slate-900 border border-slate-700 shadow-[0_25px_60px_-15px_rgba(0,0,0,1)] z-[9999] rounded-2xl flex flex-col overflow-hidden animate-fade-in !opacity-100 backdrop-blur-none">
+        <div className="absolute right-0 mt-3 w-80 sm:w-96 max-h-[80vh] bg-[#1f2937] text-[#f9fafb] border border-slate-700 shadow-[0_25px_60px_-15px_rgba(0,0,0,1)] z-[9999] rounded-2xl flex flex-col overflow-hidden animate-fade-in !opacity-100 backdrop-blur-none">
           {/* Header */}
-          <div className="p-4 border-b border-white/10 flex justify-between items-center bg-slate-800">
+          <div className="p-4 border-b border-white/10 flex justify-between items-center bg-[#111827]">
             <div className="flex items-center gap-2">
-              <h5 className="text-sm font-black text-white tracking-wide">Notifications &amp; Alerts</h5>
+              <h5 className="text-sm font-black text-[#f9fafb] tracking-wide">Notifications &amp; Alerts</h5>
               <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-bold">
                 {totalUnread} Unread
               </span>

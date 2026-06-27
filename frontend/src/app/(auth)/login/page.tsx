@@ -9,6 +9,7 @@ import * as z from "zod";
 import api from "@/lib/api";
 import { useAuthStore } from "@/store";
 import { getPortalPath } from "@/lib/auth";
+import { useToast } from "@/components/shared/Toast";
 
 // Schema validation using Zod
 const loginSchema = z.object({
@@ -21,6 +22,7 @@ type LoginFields = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const router = useRouter();
   const { setAuth } = useAuthStore();
+  const { toast } = useToast();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -33,10 +35,26 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await api.login(data.email, data.password);
+      
+      localStorage.setItem("wajood_token", res.access_token);
+      localStorage.setItem("wajood_user", JSON.stringify(res.user));
       setAuth(res.user, res.access_token);
-      router.push(getPortalPath(res.user.role));
+      
+      const roleMap: Record<string, string> = {
+        PUBLIC: "/public",
+        NGO_WORKER: "/ngo",
+        OFFICER: "/law-enforcement",
+        DOCTOR: "/hospital",
+        VOLUNTEER: "/volunteer",
+        JOURNALIST: "/media",
+        GOVT_OFFICIAL: "/government",
+        FORENSICS: "/forensics",
+        ADMIN: "/admin"
+      };
+      const path = roleMap[res.user.role] || "/public";
+      router.push(path);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      toast.error("Invalid email or password");
     } finally {
       setLoading(false);
     }
@@ -65,15 +83,6 @@ export default function LoginPage() {
         {/* Card */}
         <div className="glass-card" style={{ padding: 36 }}>
           <form onSubmit={handleSubmit(onSubmit)} id="login-form">
-            {error && (
-              <div style={{
-                background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.2)",
-                borderRadius: 10, padding: "12px 16px", marginBottom: 20,
-                color: "#f87171", fontSize: "0.85rem",
-              }}>
-                {error}
-              </div>
-            )}
 
             <div style={{ marginBottom: 20 }}>
               <label className="form-label" htmlFor="login-email">Email Address</label>
@@ -112,8 +121,14 @@ export default function LoginPage() {
               className="btn-primary"
               disabled={loading}
               id="login-submit"
-              style={{ width: "100%", display: "flex", justifyContent: "center" }}
+              style={{ width: "100%", display: "flex", justifyContent: "center", alignItems: "center", gap: 8 }}
             >
+              {loading && (
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              )}
               <span>{loading ? "Signing in..." : "Sign In"}</span>
             </button>
           </form>

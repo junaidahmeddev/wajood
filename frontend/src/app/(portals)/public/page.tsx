@@ -15,6 +15,7 @@ import CityFilter from "@/components/shared/CityFilter";
 import CaseTimeline from "@/components/shared/CaseTimeline";
 import { useToast } from "@/components/shared/Toast";
 import PhotoUpload from "@/components/shared/PhotoUpload";
+import LoadingSpinner from "@/components/shared/LoadingSpinner";
 
 const LeafletMap = dynamic(() => import("@/components/shared/LeafletMap"), {
   ssr: false,
@@ -56,6 +57,18 @@ export default function PublicPortal() {
 
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
+
+  const { data: casesFeed = [], isLoading: isFeedLoading } = useQuery({
+    queryKey: ["publicCasesFeed"],
+    queryFn: async () => {
+      try {
+        const res = await api.getCases();
+        return Array.isArray(res) ? res : [];
+      } catch (err) {
+        return [];
+      }
+    },
+  });
 
   const createCaseMutation = useMutation({
     mutationFn: async (fields: ReportFields) => {
@@ -315,8 +328,14 @@ export default function PublicPortal() {
                 <button
                   type="submit"
                   disabled={createCaseMutation.isPending}
-                  className="w-full sm:w-auto h-[40px] px-8 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg transition"
+                  className="w-full sm:w-auto h-[40px] px-8 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg transition flex items-center justify-center gap-2"
                 >
+                  {createCaseMutation.isPending && (
+                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  )}
                   {createCaseMutation.isPending ? "Submitting..." : "Submit Report"}
                 </button>
               </div>
@@ -342,8 +361,14 @@ export default function PublicPortal() {
                   <button
                     type="submit"
                     disabled={isTrackingLoading}
-                    className="w-full md:w-auto lg:w-full h-[44px] px-6 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition"
+                    className="w-full md:w-auto lg:w-full h-[44px] px-6 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition flex items-center justify-center gap-2"
                   >
+                    {isTrackingLoading && (
+                      <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    )}
                     {isTrackingLoading ? "Tracking..." : "Track"}
                   </button>
                 </form>
@@ -382,58 +407,41 @@ export default function PublicPortal() {
               <div className="flex justify-between items-center pb-2 border-b border-white/10">
                 <h2 className="text-xl font-bold text-white">Registry Feed</h2>
                 <span className="text-xs font-mono text-slate-400">
-                  Showing 3 demo cases
+                  {isFeedLoading ? "Loading..." : `Showing ${casesFeed.length} cases`}
                 </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-                {/* Demo Card 1 */}
-                <div className="bg-slate-900 border border-slate-700 rounded-xl p-5 flex flex-col justify-between">
-                  <div>
-                    <div className="flex justify-between items-start mb-3">
-                       <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center">
-                         <svg className="w-6 h-6 text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-                       </div>
-                       <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/20 uppercase tracking-wide">Missing</span>
-                    </div>
-                    <h3 className="text-sm font-bold text-white">Muhammad Ali, Age 34</h3>
-                    <div className="text-xs text-slate-400 mt-1">Last Seen: Karachi — 3 days ago</div>
-                    <div className="text-[10px] text-slate-500 font-mono mt-1">Case ID: WJD-2026-0042</div>
+                {isFeedLoading ? (
+                  <div className="col-span-full">
+                    <LoadingSpinner text="Fetching registry feed..." />
                   </div>
-                  <button onClick={() => setMapCase({} as any)} className="mt-4 w-full h-[36px] rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white transition">View Details</button>
-                </div>
-
-                {/* Demo Card 2 */}
-                <div className="bg-slate-900 border border-slate-700 rounded-xl p-5 flex flex-col justify-between">
-                  <div>
-                    <div className="flex justify-between items-start mb-3">
-                       <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center">
-                         <svg className="w-6 h-6 text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-                       </div>
-                       <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/20 uppercase tracking-wide">Missing</span>
-                    </div>
-                    <h3 className="text-sm font-bold text-white">Zainab Bibi, Age 8</h3>
-                    <div className="text-xs text-slate-400 mt-1">Last Seen: Lahore — 1 week ago</div>
-                    <div className="text-[10px] text-slate-500 font-mono mt-1">Case ID: WJD-2026-0089</div>
+                ) : casesFeed.length === 0 ? (
+                  <div className="col-span-full bg-slate-900 border border-slate-700 rounded-xl p-10 flex flex-col items-center justify-center text-center text-slate-400">
+                    <span className="text-3xl mb-2 opacity-50">📭</span>
+                    <p className="text-sm font-semibold">No cases found</p>
+                    <p className="text-xs">There are currently no active cases in the registry feed.</p>
                   </div>
-                  <button onClick={() => setMapCase({} as any)} className="mt-4 w-full h-[36px] rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white transition">View Details</button>
-                </div>
-
-                {/* Demo Card 3 */}
-                <div className="bg-slate-900 border border-slate-700 rounded-xl p-5 flex flex-col justify-between">
-                  <div>
-                    <div className="flex justify-between items-start mb-3">
-                       <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center">
-                         <svg className="w-6 h-6 text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-                       </div>
-                       <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 uppercase tracking-wide">Found</span>
+                ) : (
+                  casesFeed.map((c: any) => (
+                    <div key={c.id} className="bg-slate-900 border border-slate-700 rounded-xl p-5 flex flex-col justify-between">
+                      <div>
+                        <div className="flex justify-between items-start mb-3">
+                           <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center">
+                             <svg className="w-6 h-6 text-slate-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                           </div>
+                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-wide ${c.status === "FOUND_ALIVE" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/20" : c.status === "MATCHED" ? "bg-amber-500/20 text-amber-400 border-amber-500/20" : c.status === "IN_PROCESS" ? "bg-blue-500/20 text-blue-400 border-blue-500/20" : "bg-red-500/20 text-red-400 border-red-500/20"}`}>
+                             {c.status}
+                           </span>
+                        </div>
+                        <h3 className="text-sm font-bold text-white">{c.person?.full_name}, Age {c.person?.age_min || '?'}</h3>
+                        <div className="text-xs text-slate-400 mt-1">Location: {c.last_seen_city || c.city || 'Unknown'}</div>
+                        <div className="text-[10px] text-slate-500 font-mono mt-1">Case ID: {c.case_number}</div>
+                      </div>
+                      <button onClick={() => setMapCase(c)} className="mt-4 w-full h-[36px] rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white transition">View Details</button>
                     </div>
-                    <h3 className="text-sm font-bold text-white">Unknown Male, Age ~45</h3>
-                    <div className="text-xs text-slate-400 mt-1">Found At: PIMS Hospital, Islamabad</div>
-                    <div className="text-[10px] text-slate-500 font-mono mt-1">Case ID: WJD-2026-0102</div>
-                  </div>
-                  <button onClick={() => setMapCase({} as any)} className="mt-4 w-full h-[36px] rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white transition">View Details</button>
-                </div>
+                  ))
+                )}
               </div>
             </div>
 

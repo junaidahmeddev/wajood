@@ -9,6 +9,8 @@ import api from "@/lib/api";
 import { Case } from "@/types";
 import StatusBadge from "@/components/shared/StatusBadge";
 import { formatDate } from "@/lib/utils";
+import LoadingSpinner from "@/components/shared/LoadingSpinner";
+import EmptyState from "@/components/shared/EmptyState";
 
 const COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#6b7280"];
 
@@ -186,9 +188,9 @@ export default function MediaPortal() {
         <div className="space-y-6">
           <h3 className="text-lg font-bold text-slate-200">Confirmed Missing Press Broadcast Feed</h3>
           {isLoading ? (
-            <div className="text-center py-10 text-slate-500">Retrieving broadcast feed...</div>
+            <LoadingSpinner text="Retrieving broadcast feed..." />
           ) : missingCases.length === 0 ? (
-            <div className="glass-card p-12 text-center text-slate-500 text-xs">No active missing broadcasts logged.</div>
+            <EmptyState title="No Broadcasts" icon="📺" description="No active missing broadcasts logged." />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {missingCases.map((c: Case) => {

@@ -93,6 +93,16 @@ export default function PortalLayout({ portalName, portalIcon, portalColor, allo
                 <span className="text-[10px] text-slate-400 capitalize leading-tight">{demoUser.role}</span>
              </div>
           </div>
+          <button
+            onClick={() => {
+              localStorage.removeItem("wajood_token");
+              localStorage.removeItem("wajood_user");
+              router.push("/login");
+            }}
+            className="ml-2 px-3 py-1.5 text-xs font-bold text-rose-400 hover:text-white bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-lg transition"
+          >
+            Logout
+          </button>
         </div>
 
         {/* Mobile Navbar Elements */}
@@ -126,11 +136,23 @@ export default function PortalLayout({ portalName, portalIcon, portalColor, allo
           <Link onClick={() => setMobileMenuOpen(false)} href="/dashboard" className="w-full py-3 text-center font-bold block bg-white/5 rounded-xl border border-white/5 text-slate-200">
             National Dashboard
           </Link>
-          <div className="mt-2 pt-4 border-t border-white/10 flex items-center gap-3">
-             <div className="flex flex-col text-left">
-                <span className="text-xs font-bold text-slate-200 leading-tight">{demoUser.name}</span>
-                <span className="text-[10px] text-slate-400 capitalize leading-tight">{demoUser.role}</span>
+          <div className="mt-2 pt-4 border-t border-white/10 flex items-center justify-between">
+             <div className="flex items-center gap-3">
+               <div className="flex flex-col text-left">
+                  <span className="text-xs font-bold text-slate-200 leading-tight">{demoUser.name}</span>
+                  <span className="text-[10px] text-slate-400 capitalize leading-tight">{demoUser.role}</span>
+               </div>
              </div>
+             <button
+               onClick={() => {
+                 localStorage.removeItem("wajood_token");
+                 localStorage.removeItem("wajood_user");
+                 router.push("/login");
+               }}
+               className="px-3 py-1.5 text-xs font-bold text-rose-400 hover:text-white bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-lg transition"
+             >
+               Logout
+             </button>
           </div>
         </div>
       )}
