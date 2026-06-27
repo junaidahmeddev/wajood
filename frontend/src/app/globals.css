@@ -471,3 +471,9 @@ select option, option {
   color: #f9fafb !important;
 }
 
+
+/* Hide native Edge password reveal button */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}
