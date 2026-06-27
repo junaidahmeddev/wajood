@@ -17,11 +17,21 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
     loadFromStorage();
+    setMounted(true);
   }, [loadFromStorage]);
 
   useEffect(() => {
+    if (mounted && !user) {
+      router.replace("/login");
+    }
+  }, [mounted, user, router]);
+
+  useEffect(() => {
+    if (!mounted || !user) return;
     async function load() {
       try {
         const resStats: any = await api.getDashboardStats();
@@ -32,7 +42,15 @@ export default function DashboardPage() {
       setLoading(false);
     }
     load();
-  }, []);
+  }, [mounted, user]);
+
+  if (!mounted || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-100">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+      </div>
+    );
+  }
 
   const demoUser = user || { full_name: "Demo Citizen", role: "PUBLIC" };
 
