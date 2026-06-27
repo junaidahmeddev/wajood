@@ -30,15 +30,24 @@ const registerSchema = z.object({
   full_name: z.string().min(2, { message: "Name is too short" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
   confirm: z.string().min(6, { message: "Confirmation is required" }),
-  phone: z.string().optional(),
-  cnic: z.string().optional(),
+  phone: z.string().regex(/^\+92\d{10}$/, { message: "Format: +923001234567" }),
+  cnic: z.string().regex(/^\d{5}-\d{7}-\d{1}$/, { message: "Format: 12345-1234567-1" }),
   role: z.string(),
   organization_id: z.string().optional(),
-  province: z.string().optional(),
-  district: z.string().optional(),
+  province: z.string().min(1, { message: "Province is required" }),
+  district: z.string().min(1, { message: "District is required" }),
 }).refine((data) => data.password === data.confirm, {
   message: "Passwords do not match",
   path: ["confirm"],
+}).superRefine((data, ctx) => {
+  const requiresOrg = ["NGO_WORKER", "OFFICER", "DOCTOR", "GOVT_OFFICIAL", "FORENSICS"].includes(data.role);
+  if (requiresOrg && (!data.organization_id || data.organization_id.trim() === "")) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Organization is required",
+      path: ["organization_id"],
+    });
+  }
 });
 
 type RegisterFields = z.infer<typeof registerSchema>;
@@ -84,6 +93,9 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const { confirm, ...payload } = data;
+      if (payload.organization_id === "") {
+        delete payload.organization_id;
+      }
       const res = await api.register({
         ...payload,
         role: payload.role as UserRole,
@@ -204,39 +216,46 @@ export default function RegisterPage() {
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
               <div>
-                <label className="form-label" htmlFor="reg-phone">Phone</label>
-                <input id="reg-phone" className="form-input" placeholder="+92 300 1234567"
+                <label className="form-label" htmlFor="reg-phone">Phone *</label>
+                <input id="reg-phone" className="form-input" placeholder="+923001234567"
                   {...register("phone")} />
+                {errors.phone && <p style={{ color: "#f87171", fontSize: "0.7rem", marginTop: 2 }}>{errors.phone.message}</p>}
               </div>
               <div>
-                <label className="form-label" htmlFor="reg-cnic">CNIC</label>
+                <label className="form-label" htmlFor="reg-cnic">CNIC *</label>
                 <input id="reg-cnic" className="form-input" placeholder="12345-1234567-1"
                   {...register("cnic")} />
+                {errors.cnic && <p style={{ color: "#f87171", fontSize: "0.7rem", marginTop: 2 }}>{errors.cnic.message}</p>}
               </div>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
               <div>
-                <label className="form-label" htmlFor="reg-province">Province</label>
+                <label className="form-label" htmlFor="reg-province">Province *</label>
                 <select id="reg-province" className="form-select" {...register("province")} onChange={(e) => {
-                  setValue("province", e.target.value);
-                  setValue("district", "");
+                  setValue("province", e.target.value, { shouldValidate: true });
+                  setValue("district", "", { shouldValidate: true });
                 }}>
                   <option value="">Select province</option>
                   {PAKISTAN_PROVINCES.map((p) => <option key={p.name} value={p.name}>{p.name}</option>)}
                 </select>
+                {errors.province && <p style={{ color: "#f87171", fontSize: "0.7rem", marginTop: 2 }}>{errors.province.message}</p>}
               </div>
               <div>
-                <label className="form-label" htmlFor="reg-district">District</label>
-                <select id="reg-district" className="form-select" {...register("district")}>
+                <label className="form-label" htmlFor="reg-district">District *</label>
+                <select id="reg-district" className="form-select" {...register("district")} onChange={(e) => {
+                  setValue("district", e.target.value, { shouldValidate: true });
+                }}>
                   <option value="">Select district</option>
                   {selectedProvince?.districts.map((d) => <option key={d} value={d}>{d}</option>)}
                 </select>
+                {errors.district && <p style={{ color: "#f87171", fontSize: "0.7rem", marginTop: 2 }}>{errors.district.message}</p>}
               </div>
             </div>
 
             <button type="submit" className="btn-primary" disabled={loading} id="register-submit"
-              style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+              style={{ width: "100%", display: "flex", justifyContent: "center", alignItems: "center", gap: 8 }}>
+              {loading && <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>}
               <span>{loading ? "Creating Account..." : "Create Account"}</span>
             </button>
           </form>

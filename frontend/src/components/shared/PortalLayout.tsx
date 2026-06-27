@@ -43,19 +43,36 @@ export default function PortalLayout({ portalName, portalIcon, portalColor, allo
     allowedRoles.some((r) => r === user.role || r.toUpperCase() === user.role || roleMap[r.toLowerCase()] === user.role)
   ));
 
-  const getDemoName = (pName: string) => {
-    const lower = pName.toLowerCase();
-    if (lower.includes("ngo") || lower.includes("shelter")) return { name: "Edhi Foundation Worker", role: "NGO Worker", initials: "EW" };
-    if (lower.includes("police") || lower.includes("officer") || lower.includes("law")) return { name: "FIA Officer", role: "Law Enforcement", initials: "FO" };
-    if (lower.includes("hospital") || lower.includes("morgue") || lower.includes("doctor")) return { name: "Dr. Ahmed", role: "Medical Examiner", initials: "DA" };
-    if (lower.includes("media") || lower.includes("broadcast")) return { name: "ARY News", role: "Media Partner", initials: "AN" };
-    if (lower.includes("government") || lower.includes("ndma")) return { name: "NDMA Official", role: "Govt Official", initials: "NO" };
-    if (lower.includes("volunteer")) return { name: "Demo Volunteer", role: "Volunteer", initials: "DV" };
-    if (lower.includes("forensics")) return { name: "PFSA Technician", role: "Forensic Scientist", initials: "PT" };
-    return { name: "Demo Citizen", role: "Public Citizen", initials: "DC" };
+  useEffect(() => {
+    if (mounted) {
+      if (!user) {
+        router.replace("/login");
+      } else if (!hasAccess) {
+        router.replace("/dashboard");
+      }
+    }
+  }, [mounted, user, hasAccess, router]);
+
+  if (!mounted || !user || !hasAccess) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-100">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+      </div>
+    );
+  }
+
+  const getInitials = (name: string) => {
+    if (!name) return "U";
+    const parts = name.split(" ");
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return parts[0][0].toUpperCase();
   };
 
-  const demoUser = getDemoName(portalName);
+  const displayUser = {
+    name: user.full_name || "User",
+    role: user.role,
+    initials: getInitials(user.full_name || "User")
+  };
 
   return (
     <div className="page-enter flex flex-col min-h-screen bg-slate-950 text-slate-100 overflow-x-hidden relative w-full max-w-full">
@@ -86,11 +103,11 @@ export default function PortalLayout({ portalName, portalIcon, portalColor, allo
           <NotificationBell />
           <div className="flex items-center gap-2">
              <div className="w-9 h-9 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold text-xs shrink-0">
-               {demoUser.initials}
+               {displayUser.initials}
              </div>
              <div className="flex flex-col text-left">
-                <span className="text-xs font-bold text-slate-200 leading-tight">{demoUser.name}</span>
-                <span className="text-[10px] text-slate-400 capitalize leading-tight">{demoUser.role}</span>
+                <span className="text-xs font-bold text-slate-200 leading-tight">{displayUser.name}</span>
+                <span className="text-[10px] text-slate-400 capitalize leading-tight">{displayUser.role}</span>
              </div>
           </div>
           <button
@@ -109,7 +126,7 @@ export default function PortalLayout({ portalName, portalIcon, portalColor, allo
         <div className="flex md:hidden items-center gap-3">
           <NotificationBell />
           <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold text-xs shrink-0">
-            {demoUser.initials}
+            {displayUser.initials}
           </div>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -139,8 +156,8 @@ export default function PortalLayout({ portalName, portalIcon, portalColor, allo
           <div className="mt-2 pt-4 border-t border-white/10 flex items-center justify-between">
              <div className="flex items-center gap-3">
                <div className="flex flex-col text-left">
-                  <span className="text-xs font-bold text-slate-200 leading-tight">{demoUser.name}</span>
-                  <span className="text-[10px] text-slate-400 capitalize leading-tight">{demoUser.role}</span>
+                  <span className="text-xs font-bold text-slate-200 leading-tight">{displayUser.name}</span>
+                  <span className="text-[10px] text-slate-400 capitalize leading-tight">{displayUser.role}</span>
                </div>
              </div>
              <button

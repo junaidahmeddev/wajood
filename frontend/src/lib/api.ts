@@ -39,136 +39,26 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response.data,
   (error) => {
-    const config = error.config || {};
-    const method = (config.method || "").toLowerCase();
-    const url = (config.url || "").toLowerCase();
-
-    // STEP 6: FALLBACK PLACEHOLDER DATA FOR DEMO MODE
-    if (method === "get") {
-      if (url.includes("unread-count")) return Promise.resolve({ unread_count: 3 });
-      if (url.includes("notifications")) return Promise.resolve([]);
-      if (url.includes("cases-by-status")) return Promise.resolve([
-        { status: "MISSING", count: 1247 },
-        { status: "FOUND_ALIVE", count: 893 },
-        { status: "MATCHED", count: 234 },
-      ]);
-      if (url.includes("cases-by-province")) return Promise.resolve([
-        { province: "Sindh", count: 542 },
-        { province: "Punjab", count: 812 },
-        { province: "KP", count: 210 },
-        { province: "Balochistan", count: 120 },
-      ]);
-      if (url.includes("dashboard")) return Promise.resolve({
-        total_missing: 1247,
-        found_alive: 893,
-        ai_matches: 234,
-        recovery_rate: "71.6%",
-        total_users: 1420,
-        total_cases: 12847,
-        total_organizations: 340,
-        total_matches: 234,
-        active_cases: 1247,
-        resolved_cases: 11600,
-        cases: { total: 12847, active: 1247, resolved: 11600, resolution_rate: 90.3 },
-        persons: { total: 12847, missing: 1247, found: 893, unidentified: 10707 },
-        organizations: { total: 340, verified: 340 },
-        users: { total: 1420 },
-      });
-      if (url.includes("audit-logs")) return Promise.resolve([
-        { id: "1", sequence_number: 1042, action: "CREATE", table_name: "missing_cases", record_id: "WJD-2026-KHI01", created_at: new Date().toISOString(), current_hash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" },
-        { id: "2", sequence_number: 1043, action: "UPDATE", table_name: "biometric_matches", record_id: "MCH-99421", created_at: new Date().toISOString(), current_hash: "8f434346648f6b96df89dda901c5176b10a6d83961dd3c1ac88b59b2dc327aa4" },
-      ]);
-      if (url.includes("queue") || url.includes("results")) return Promise.resolve([
-        {
-          id: "match-demo-1",
-          missing_case_id: "WJD-2026-KHI01",
-          found_person_id: "HOSP-LAH-442",
-          confidence_score: 94.2,
-          status: "PENDING",
-          missing_case: { full_name: "Muhammad Ali", age: 14, city: "Karachi", photo_url: "/placeholder-missing.png" },
-          found_person: { full_name: "Unknown Boy", age: 15, city: "Lahore", photo_url: "/placeholder-found.png" },
-        }
-      ]);
-      if (url.includes("cases") || url.includes("recent")) return Promise.resolve([
-        {
-          id: "c1",
-          case_number: "WJD-2026-KHI01",
-          full_name: "Muhammad Ali",
-          person: { full_name: "Muhammad Ali", gender: "Male" },
-          title: "Muhammad Ali (Missing)",
-          age: 14,
-          city: "Karachi",
-          last_seen_district: "Karachi",
-          status: "MISSING",
-          priority: "high",
-          days_missing: 12,
-          created_at: "2026-06-13T10:00:00Z"
-        },
-        {
-          id: "c2",
-          case_number: "WJD-2026-LHR02", 
-          full_name: "Zainab Fatima",
-          person: { full_name: "Zainab Fatima", gender: "Female" },
-          title: "Zainab Fatima (Matched)",
-          age: 8,
-          city: "Lahore",
-          last_seen_district: "Lahore",
-          status: "MATCHED",
-          priority: "critical",
-          days_missing: 5,
-          created_at: "2026-06-20T10:00:00Z"
-        },
-        {
-          id: "c3",
-          case_number: "WJD-2026-ISB03",
-          full_name: "Hamza Shah",
-          person: { full_name: "Hamza Shah", gender: "Male" },
-          title: "Hamza Shah (Found Alive)",
-          age: 22,
-          city: "Islamabad", 
-          last_seen_district: "Islamabad",
-          status: "FOUND_ALIVE",
-          priority: "medium",
-          days_missing: 3,
-          created_at: "2026-06-22T10:00:00Z"
-        }
-      ]);
-      return Promise.resolve([]);
-    }
-
-    // STEP 3: POST/PATCH/PUT FAKE SUCCESS FOR DEMO EVALUATION
-    if (method === "post" || method === "patch" || method === "put") {
-      if (url.includes("/api/auth/login") || url.includes("/api/auth/register")) {
-        let role = "ADMIN";
-        let email = "admin@wajood.pk";
-        let full_name = "Demo Admin";
-        try {
-          if (typeof config.data === "string") {
-            const parsed = JSON.parse(config.data);
-            if (parsed.role) role = parsed.role;
-            if (parsed.email) email = parsed.email;
-            if (parsed.full_name) full_name = parsed.full_name;
-          }
-        } catch (e) {}
-        
-        return Promise.resolve({
-          access_token: "demo-jwt-token-12345",
-          user: { id: "demo-id", email, full_name, role }
-        });
-      }
-
+    if (error.response && error.response.status === 401) {
       if (typeof window !== "undefined") {
-        // Trigger fake toast notification if toast is present or console log
+        localStorage.removeItem("wajood_token");
+        localStorage.removeItem("wajood_user");
+        const path = window.location.pathname;
+        if (!path.includes("/login") && !path.includes("/register")) {
+          window.location.href = "/login";
+        }
       }
-      return Promise.resolve({
-        success: true,
-        message: "Demo Mode: Form submitted successfully ✅",
-        id: "DEMO-ID-" + Math.floor(Math.random() * 10000),
-        broadcast_count: 1420,
-      });
     }
 
     let message = "API Request failed";
+    if (error.response?.data?.detail) {
+      if (typeof error.response.data.detail === "string") {
+        message = error.response.data.detail;
+      } else if (Array.isArray(error.response.data.detail)) {
+        message = error.response.data.detail[0]?.msg || message;
+      }
+    }
+
     return Promise.reject(new Error(message));
   }
 );
