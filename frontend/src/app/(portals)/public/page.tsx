@@ -453,11 +453,11 @@ export default function PublicPortal() {
 
           {/* ────────────────── TRACK CASE TAB ────────────────── */}
           {activeTab === "track" && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10 w-full items-start">
               
               {/* Tracker Query Sidebar */}
-              <div className="lg:col-span-1 flex flex-col gap-6">
-                <div className="bg-slate-900 border border-slate-700 rounded-[12px] p-6">
+              <div className="lg:col-span-1 flex flex-col gap-6 sticky top-24">
+                <div className="bg-slate-900 border border-slate-700 rounded-[12px] p-6 lg:p-8">
                   <h3 className="text-lg font-bold text-white mb-2">Search Tracking Registry</h3>
                   <p className="text-xs text-slate-400 mb-4">Enter case reference number, CNIC, or full name to query state telemetry.</p>
                   
@@ -490,11 +490,11 @@ export default function PublicPortal() {
               {/* Milestones and Telemetry Display */}
               <div className="lg:col-span-2 flex flex-col gap-6">
                 {isTrackingLoading ? (
-                  <div className="bg-slate-900 border border-slate-700 rounded-[12px] p-10 flex flex-col items-center justify-center min-h-[300px]">
+                  <div className="bg-slate-900 border border-slate-700 rounded-[12px] p-10 flex flex-col items-center justify-center min-h-[400px]">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
                   </div>
                 ) : trackingCase ? (
-                  <div className="bg-slate-900 border border-slate-700 rounded-[12px] p-6 animate-fadeIn">
+                  <div className="bg-slate-900 border border-slate-700 rounded-[12px] p-8 lg:p-10 animate-fadeIn">
                     
                     {/* Case ID and badge */}
                     <div className="flex justify-between items-center pb-3 border-b border-white/10 mb-6">
@@ -513,27 +513,27 @@ export default function PublicPortal() {
                     </div>
 
                     {/* Meta info columns */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs sm:text-sm text-slate-300 mb-8 bg-slate-950 p-5 rounded-xl border border-slate-800 shadow-inner">
-                      <div className="flex flex-col gap-1">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-xs sm:text-sm text-slate-300 mb-10 bg-slate-950 p-6 rounded-xl border border-slate-800 shadow-inner">
+                      <div className="flex flex-col gap-1.5 justify-center">
                         <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Subject</span>
-                        <span className="font-semibold text-white">{(trackingCase as any).full_name || trackingCase.title || "Not Provided"}</span>
+                        <span className="text-sm font-bold text-white">{(trackingCase as any).full_name || trackingCase.title || "Not Provided"}</span>
                       </div>
-                      <div className="flex flex-col gap-1">
+                      <div className="flex flex-col gap-1.5 justify-center">
                         <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Age</span>
-                        <span className="font-semibold text-white">{(trackingCase as any).age ? `${(trackingCase as any).age} Years` : "Not Provided"}</span>
+                        <span className="text-sm font-bold text-white">{(trackingCase as any).age ? `${(trackingCase as any).age} Years` : "Not Provided"}</span>
                       </div>
-                      <div className="flex flex-col gap-1">
+                      <div className="flex flex-col gap-1.5 justify-center">
                         <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">City</span>
-                        <span className="font-semibold text-white">{trackingCase.last_seen_city || "—"}</span>
+                        <span className="text-sm font-bold text-white">{trackingCase.last_seen_city || "—"}</span>
                       </div>
-                      <div className="flex flex-col gap-1">
+                      <div className="flex flex-col gap-1.5 justify-center">
                         <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Reported On</span>
-                        <span className="font-semibold text-white">{formatDate(trackingCase.created_at)}</span>
+                        <span className="text-sm font-bold text-white">{formatDate(trackingCase.created_at)}</span>
                       </div>
                     </div>
 
                     {/* Timeline Milestones */}
-                    <h4 className="text-sm font-bold text-white mb-6">Vertical Investigation Milestones</h4>
+                    <h4 className="text-base font-bold text-white mt-4 mb-8">Vertical Investigation Milestones</h4>
                     
                     <div className="relative pl-6 border-l border-white/10 space-y-8 py-2">
                       {getTimelineSteps(trackingCase).map((step, idx) => (
@@ -574,8 +574,8 @@ export default function PublicPortal() {
 
                     {/* Full Raw History Timeline if events exist */}
                     {trackingTimeline.length > 0 && (
-                      <div className="pt-6 mt-8 border-t border-white/10">
-                        <h4 className="text-sm font-bold text-white mb-4">Detailed Action Timeline</h4>
+                      <div className="pt-10 mt-10 border-t border-white/10">
+                        <h4 className="text-base font-bold text-white mb-8">Detailed Action Timeline</h4>
                         {/* We use timeline directly inline here since it is already custom styled in components */}
                         <div className="relative pl-6 border-l border-white/10 space-y-6 py-2">
                           {trackingTimeline.map((event, idx) => (
