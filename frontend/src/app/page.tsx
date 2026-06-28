@@ -36,7 +36,7 @@ const HOW_IT_WORKS = [
 ];
 
 export default function LandingPage() {
-  const { loadFromStorage } = useAuthStore();
+  const { user, clearAuth, loadFromStorage } = useAuthStore();
   const [mounted, setMounted] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
@@ -71,12 +71,25 @@ export default function LandingPage() {
 
           {/* Desktop Nav Buttons */}
           <div className="hidden md:flex items-center gap-4 shrink-0 h-full">
-            <Link href="/login" className="btn-secondary px-5 py-2 text-sm min-h-[40px] flex items-center justify-center font-bold border border-white/20 text-slate-200 hover:text-white">
-              Login
-            </Link>
-            <Link href="/register" className="btn-primary px-5 py-2 text-sm min-h-[40px] flex items-center justify-center font-bold">
-              Register
-            </Link>
+            {mounted && user ? (
+              <>
+                <Link href="/dashboard" className="btn-secondary px-5 py-2 text-sm min-h-[40px] flex items-center justify-center font-bold border border-white/20 text-slate-200 hover:text-white">
+                  Dashboard
+                </Link>
+                <button onClick={() => clearAuth()} className="btn-primary px-5 py-2 text-sm min-h-[40px] flex items-center justify-center font-bold">
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="btn-secondary px-5 py-2 text-sm min-h-[40px] flex items-center justify-center font-bold border border-white/20 text-slate-200 hover:text-white">
+                  Login
+                </Link>
+                <Link href="/register" className="btn-primary px-5 py-2 text-sm min-h-[40px] flex items-center justify-center font-bold">
+                  Register
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Trigger Button */}
@@ -97,12 +110,25 @@ export default function LandingPage() {
       {/* Mobile Dropdown Drawer Menu Box */}
       {mobileNavOpen && (
         <div className="md:hidden fixed inset-x-0 top-[72px] z-40 bg-slate-900/95 border-b border-white/10 p-5 shadow-2xl backdrop-blur-2xl animate-fadeIn flex flex-col gap-3">
-          <Link onClick={() => setMobileNavOpen(false)} href="/login" className="btn-secondary w-full py-3 text-center font-bold block flex items-center justify-center border border-white/20 text-slate-200">
-            Login
-          </Link>
-          <Link onClick={() => setMobileNavOpen(false)} href="/register" className="btn-primary w-full py-3 text-center font-bold block flex items-center justify-center">
-            Register
-          </Link>
+          {mounted && user ? (
+            <>
+              <Link onClick={() => setMobileNavOpen(false)} href="/dashboard" className="btn-secondary w-full py-3 text-center font-bold block flex items-center justify-center border border-white/20 text-slate-200">
+                Dashboard
+              </Link>
+              <button onClick={() => { setMobileNavOpen(false); clearAuth(); }} className="btn-primary w-full py-3 text-center font-bold block flex items-center justify-center">
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link onClick={() => setMobileNavOpen(false)} href="/login" className="btn-secondary w-full py-3 text-center font-bold block flex items-center justify-center border border-white/20 text-slate-200">
+                Login
+              </Link>
+              <Link onClick={() => setMobileNavOpen(false)} href="/register" className="btn-primary w-full py-3 text-center font-bold block flex items-center justify-center">
+                Register
+              </Link>
+            </>
+          )}
         </div>
       )}
 
@@ -130,10 +156,10 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-[12px] w-full sm:w-auto justify-center items-center">
-            <Link href="/public" className="btn-primary h-[48px] px-8 text-sm sm:text-base font-bold flex items-center justify-center shadow-lg shadow-indigo-500/25 w-full sm:w-auto gap-2">
+            <Link href={mounted && user ? "/public" : "/login"} className="btn-primary h-[48px] px-8 text-sm sm:text-base font-bold flex items-center justify-center shadow-lg shadow-indigo-500/25 w-full sm:w-auto gap-2">
               Report Missing Person <span>→</span>
             </Link>
-            <Link href="/dashboard" className="btn-secondary h-[48px] px-8 text-sm sm:text-base font-bold flex items-center justify-center w-full sm:w-auto border border-white/20">
+            <Link href={mounted && user ? "/dashboard" : "/login"} className="btn-secondary h-[48px] px-8 text-sm sm:text-base font-bold flex items-center justify-center w-full sm:w-auto border border-white/20">
               Search National Database
             </Link>
           </div>
@@ -197,7 +223,7 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
             {PORTALS.map((p) => (
-              <Link key={p.title} href={p.href} className="no-underline text-inherit block group h-full">
+              <Link key={p.title} href={mounted && user ? p.href : "/login"} className="no-underline text-inherit block group h-full">
                 <div className="saas-card bg-slate-900/50 border border-white/10 rounded-xl p-[24px] h-full flex flex-col hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] group-hover:border-indigo-500/50 transition-all duration-200">
                   <div className="flex-1 flex flex-col">
                     <div className="w-[48px] h-[48px] rounded-full flex items-center justify-center mb-5 shrink-0" style={{ backgroundColor: p.color + '20', color: p.color }}>
