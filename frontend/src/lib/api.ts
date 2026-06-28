@@ -96,6 +96,14 @@ class ApiService {
     return apiClient.get("/api/cases/", { params });
   }
 
+  async trackCase(caseNumber: string) {
+    return apiClient.get(`/api/cases/track/${caseNumber}`);
+  }
+
+  async trackCaseTimeline(caseNumber: string) {
+    return apiClient.get(`/api/cases/track/${caseNumber}/timeline`);
+  }
+
   async getCase(id: string) {
     return apiClient.get(`/api/cases/${id}`);
   }

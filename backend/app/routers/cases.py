@@ -239,6 +239,76 @@ async def get_stats(
     }
 
 
+@router.get("/track/{case_number}", response_model=MissingPersonResponse)
+async def track_case_public(
+    case_number: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Public endpoint to track a case by its exact case number."""
+    result = await db.execute(
+        select(MissingPerson).filter(MissingPerson.case_number.ilike(case_number))
+    )
+    missing_person = result.scalars().first()
+    if not missing_person:
+        raise HTTPException(status_code=404, detail="Case not found")
+
+    case_schema = MissingPersonResponse.model_validate(missing_person)
+    # Mask PII for public tracking
+    case_schema.cnic = "MASKED"
+    case_schema.contact_name = "MASKED"
+    case_schema.contact_phone = "MASKED"
+    
+    return case_schema
+
+
+@router.get("/track/{case_number}/timeline")
+async def track_case_timeline_public(
+    case_number: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Public endpoint to get case timeline by case number."""
+    result = await db.execute(
+        select(MissingPerson).filter(MissingPerson.case_number.ilike(case_number))
+    )
+    missing_person = result.scalars().first()
+    if not missing_person:
+        raise HTTPException(status_code=404, detail="Case not found")
+
+    timeline = []
+
+    # 1. Creation event
+    timeline.append({
+        "timestamp": missing_person.created_at.isoformat(),
+        "event_type": "CREATION",
+        "title": "Case Reported",
+        "description": "Case reported and logged into the nationwide registry.",
+    })
+
+    # 2. Status Updates events
+    updates_res = await db.execute(select(CaseUpdate).filter(CaseUpdate.case_id == missing_person.id))
+    for u in updates_res.scalars().all():
+        timeline.append({
+            "timestamp": u.created_at.isoformat(),
+            "event_type": "STATUS_UPDATE",
+            "title": f"Status changed: {u.old_status} → {u.new_status}",
+            "description": u.notes or "",
+        })
+
+    # 3. Sightings events
+    sightings_res = await db.execute(select(Sighting).filter(Sighting.missing_person_id == missing_person.id))
+    for s in sightings_res.scalars().all():
+        timeline.append({
+            "timestamp": s.created_at.isoformat(),
+            "event_type": "SIGHTING",
+            "title": "Sighting reported",
+            "description": "A possible sighting was reported and is under review.",
+        })
+
+    # Sort ascending by timestamp
+    timeline.sort(key=lambda x: x["timestamp"])
+    return timeline
+
+
 @router.get("/{id}")
 async def get_case_details(
     id: str,

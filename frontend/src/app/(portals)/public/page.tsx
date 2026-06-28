@@ -132,23 +132,18 @@ export default function PublicPortal() {
 
     setIsTrackingLoading(true);
     try {
-      const listRes: any = await api.getCases({ search: trackingNumber.trim() });
-      const foundList = Array.isArray(listRes) ? listRes : [];
-      const matched = foundList.find(
-        (c: Case) => c.case_number?.toLowerCase() === trackingNumber.trim().toLowerCase() ||
-                     c.person?.full_name?.toLowerCase() === trackingNumber.trim().toLowerCase()
-      );
-
-      if (!matched) {
-        setTrackingError("No official record found matching this tracking code.");
-        return;
+      const trackingCode = trackingNumber.trim();
+      const matchedRes: any = await api.trackCase(trackingCode);
+      
+      if (!matchedRes) {
+        return; // Empty state will be handled by UI
       }
 
-      setTrackingCase(matched);
-      const timelineRes: any = await api.getCaseTimeline(matched.id);
+      setTrackingCase(matchedRes);
+      const timelineRes: any = await api.trackCaseTimeline(trackingCode);
       setTrackingTimeline(Array.isArray(timelineRes) ? timelineRes : []);
     } catch {
-      setTrackingError("Failed to retrieve tracking folder telemetry.");
+      toast.error("Failed to retrieve tracking folder telemetry. Please try again later.");
     } finally {
       setIsTrackingLoading(false);
     }
@@ -177,28 +172,42 @@ export default function PublicPortal() {
 
   // Timeline Step logic Helper
   const getTimelineSteps = (c: Case) => {
-    const status = c.status?.toUpperCase();
-    const hasSightings = trackingTimeline.some((e: any) => e.event_type?.toUpperCase() === "SIGHTING");
+    const status = c.status?.toUpperCase() || "MISSING";
+    const creationEvent = trackingTimeline.find((e: any) => e.event_type?.toUpperCase() === "CREATION");
+    const sightingEvents = trackingTimeline.filter((e: any) => e.event_type?.toUpperCase() === "SIGHTING");
+    const matchEvent = trackingTimeline.find((e: any) => 
+      e.event_type?.toUpperCase() === "STATUS_UPDATE" && 
+      ["MATCHED", "FOUND_ALIVE", "RESOLVED"].some(s => e.title?.toUpperCase().includes(s))
+    );
+    
+    const isResolved = ["FOUND_ALIVE", "DECEASED", "RESOLVED"].includes(status);
+    const isMatched = isResolved || status === "MATCHED";
+    const isInProcess = isMatched || status === "IN_PROCESS" || status === "REPORTED" || status === "MISSING";
+
     return [
       {
         title: "Case Created",
         desc: "Case successfully logged onto the nationwide biometric blockchain database.",
-        done: true,
+        state: "completed",
+        timestamp: creationEvent ? new Date(creationEvent.timestamp).toLocaleString() : new Date(c.created_at).toLocaleString()
       },
       {
         title: "AI Facial Matching Running",
         desc: "Facial matching telemetry scanning national hospital, NGO, and morgue records.",
-        done: ["IN_PROCESS", "MATCHED", "FOUND_ALIVE", "DECEASED", "RESOLVED"].includes(status),
+        state: isMatched ? "completed" : (isInProcess ? "current" : "pending"),
+        timestamp: isMatched && matchEvent ? new Date(matchEvent.timestamp).toLocaleString() : (isInProcess ? "In Progress" : null)
       },
       {
         title: "Sighting Reported",
-        desc: "Witness sighting or telemetric location logs added to case timeline.",
-        done: hasSightings || ["MATCHED", "FOUND_ALIVE", "DECEASED", "RESOLVED"].includes(status),
+        desc: sightingEvents.length > 0 ? `Witness sighting logs added to timeline (${sightingEvents.length} reports).` : "Witness sighting or telemetric location logs added to case timeline.",
+        state: (sightingEvents.length > 0 || isMatched) ? "completed" : (isInProcess ? "current" : "pending"),
+        timestamp: sightingEvents.length > 0 ? new Date(sightingEvents[sightingEvents.length - 1].timestamp).toLocaleString() : null
       },
       {
         title: "Match Found",
         desc: "AI biometric verification successful. Case successfully resolved or closed.",
-        done: ["FOUND_ALIVE", "DECEASED", "RESOLVED"].includes(status),
+        state: isResolved ? "completed" : (isMatched ? "current" : "pending"),
+        timestamp: matchEvent ? new Date(matchEvent.timestamp).toLocaleString() : null
       },
     ];
   };
@@ -475,11 +484,6 @@ export default function PublicPortal() {
                     </button>
                   </form>
 
-                  {trackingError && (
-                    <p className="text-xs text-red-400 mt-3 font-semibold">
-                      ❌ {trackingError}
-                    </p>
-                  )}
                 </div>
               </div>
 
@@ -509,29 +513,60 @@ export default function PublicPortal() {
                     </div>
 
                     {/* Meta info columns */}
-                    <div className="grid grid-cols-2 gap-4 text-xs sm:text-sm text-slate-300 mb-8 bg-white/[0.02] p-4 rounded-xl border border-white/5">
-                      <div><span className="text-slate-500 font-bold">Subject:</span> {trackingCase.person?.full_name || trackingCase.title || "—"}</div>
-                      <div><span className="text-slate-500 font-bold">Age:</span> {trackingCase.person?.age_min || trackingCase.person?.age || "—"}</div>
-                      <div><span className="text-slate-500 font-bold">City:</span> {trackingCase.last_seen_city || "—"}</div>
-                      <div><span className="text-slate-500 font-bold">Reported:</span> {formatDate(trackingCase.created_at)}</div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs sm:text-sm text-slate-300 mb-8 bg-slate-950 p-5 rounded-xl border border-slate-800 shadow-inner">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Subject</span>
+                        <span className="font-semibold text-white">{(trackingCase as any).full_name || trackingCase.title || "Not Provided"}</span>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Age</span>
+                        <span className="font-semibold text-white">{(trackingCase as any).age ? `${(trackingCase as any).age} Years` : "Not Provided"}</span>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">City</span>
+                        <span className="font-semibold text-white">{trackingCase.last_seen_city || "—"}</span>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Reported On</span>
+                        <span className="font-semibold text-white">{formatDate(trackingCase.created_at)}</span>
+                      </div>
                     </div>
 
                     {/* Timeline Milestones */}
                     <h4 className="text-sm font-bold text-white mb-6">Vertical Investigation Milestones</h4>
                     
-                    <div className="relative pl-6 border-l border-white/10 space-y-6">
+                    <div className="relative pl-6 border-l border-white/10 space-y-8 py-2">
                       {getTimelineSteps(trackingCase).map((step, idx) => (
-                        <div key={idx} className="relative flex gap-4">
-                          <div className={`absolute -left-[33px] top-0 w-6 h-6 rounded-full border-2 flex items-center justify-center text-[10px] font-bold ${
-                            step.done 
-                              ? "bg-emerald-600 border-emerald-500 text-white shadow-emerald-500/25" 
-                              : "bg-slate-950 border-slate-800 text-slate-500"
+                        <div key={idx} className="relative flex gap-5">
+                          <div className={`absolute -left-[35px] top-0.5 w-[22px] h-[22px] rounded-full border-2 flex items-center justify-center text-[10px] font-bold ${
+                            step.state === 'completed'
+                              ? "bg-emerald-600 border-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.5)]" 
+                              : step.state === 'current'
+                              ? "bg-indigo-600 border-indigo-400 text-white shadow-[0_0_15px_rgba(99,102,241,0.6)] animate-pulse"
+                              : "bg-slate-950 border-slate-800 text-slate-600"
                           }`}>
-                            {step.done ? "✓" : idx + 1}
+                            {step.state === 'completed' ? "✓" : idx + 1}
                           </div>
-                          <div>
-                            <h5 className={`text-sm font-bold ${step.done ? "text-emerald-400" : "text-slate-400"}`}>{step.title}</h5>
-                            <p className="text-xs text-slate-400 mt-1 max-w-md">{step.desc}</p>
+                          <div className="w-full">
+                            <div className="flex justify-between items-start w-full">
+                              <h5 className={`text-sm font-bold leading-none mb-1 ${
+                                step.state === 'completed' ? "text-emerald-400" : 
+                                step.state === 'current' ? "text-indigo-400" : 
+                                "text-slate-500"
+                              }`}>{step.title}</h5>
+                              {step.timestamp && (
+                                <span className={`text-[10px] font-mono px-2 py-0.5 rounded ${
+                                  step.state === 'completed' ? "bg-emerald-500/10 text-emerald-500" :
+                                  step.state === 'current' ? "bg-indigo-500/10 text-indigo-400 animate-pulse" :
+                                  "bg-white/5 text-slate-500"
+                                }`}>
+                                  {step.timestamp}
+                                </span>
+                              )}
+                            </div>
+                            <p className={`text-[13px] max-w-md leading-relaxed ${
+                              step.state === 'pending' ? "text-slate-600" : "text-slate-400"
+                            }`}>{step.desc}</p>
                           </div>
                         </div>
                       ))}
