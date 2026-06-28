@@ -15,7 +15,7 @@ import PhotoUpload from "@/components/shared/PhotoUpload";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import CityFilter from "@/components/shared/CityFilter";
 import CaseTimeline from "@/components/shared/CaseTimeline";
-import { getStatusColor, getStatusLabel, formatDate } from "@/lib/utils";
+import { getStatusColor, getStatusLabel, formatDate, ALL_CITIES } from "@/lib/utils";
 
 // Schema validation using Zod
 const reportSchema = z.object({
@@ -54,6 +54,7 @@ export default function PublicPortal() {
   // Form feedback states
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
+  const [submittedCaseId, setSubmittedCaseId] = useState("");
 
   // Feed filter states
   const [searchTerm, setSearchTerm] = useState("");
@@ -92,8 +93,7 @@ export default function PublicPortal() {
       return api.createCase(formData);
     },
     onSuccess: (data: any) => {
-      const msg = `✅ Case Registered Successfully! Case Number: ${data.case_number}`;
-      setFormSuccess(msg);
+      setSubmittedCaseId(data.case_number);
       toast.success("Case reported successfully!");
       reset();
       setSelectedPhoto(null);
@@ -238,6 +238,7 @@ export default function PublicPortal() {
                 setActiveTab(tab.id as any);
                 setFormError("");
                 setFormSuccess("");
+                setSubmittedCaseId("");
               }}
               className={`h-[48px] px-6 text-sm font-bold border-b-2 transition-all whitespace-nowrap ${
                 activeTab === tab.id
@@ -256,24 +257,71 @@ export default function PublicPortal() {
           {/* ────────────────── REPORT TAB ────────────────── */}
           {activeTab === "report" && (
             <div className="bg-slate-900 border border-slate-700 p-6 sm:p-8 rounded-[12px] w-full">
-              <div className="pb-4 mb-6 border-b border-white/10">
-                <h2 className="text-xl font-bold text-white">Report Missing Person</h2>
-                <p className="text-xs text-slate-400">Please provide accurate biometric information and a clear profile photo.</p>
-              </div>
+              {submittedCaseId ? (
+                <div className="flex flex-col items-center justify-center py-10 text-center animate-fadeIn">
+                  <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center text-3xl mb-6 border border-emerald-500/30">✓</div>
+                  <h2 className="text-2xl font-bold text-white mb-2">Your report has been submitted.</h2>
+                  <p className="text-slate-400 mb-8 max-w-md">Thank you for taking this step.</p>
+                  
+                  <div className="bg-slate-950 border border-emerald-500/30 p-6 rounded-xl w-full max-w-lg mb-8">
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Generated Case ID</p>
+                    <div className="flex items-center justify-center gap-3">
+                      <span className="text-2xl font-mono font-bold text-emerald-400">{submittedCaseId}</span>
+                      <button 
+                        onClick={() => {
+                          navigator.clipboard.writeText(submittedCaseId);
+                          toast.success("Copied to clipboard!");
+                        }}
+                        className="text-slate-400 hover:text-white p-2 bg-white/5 rounded-lg transition-colors"
+                        title="Copy to clipboard"
+                      >
+                        📋
+                      </button>
+                    </div>
+                  </div>
 
-              {formSuccess && (
-                <div className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-sm font-bold animate-fadeIn">
-                  {formSuccess}
+                  <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-left max-w-lg w-full mb-8 space-y-4">
+                    <h3 className="font-bold text-white mb-2">What's Next?</h3>
+                    <ul className="text-sm text-slate-300 space-y-3 list-disc pl-5">
+                      <li>Your case has been added to the AI biometric registry.</li>
+                      <li>We will notify you via the notification bell on the top right when a match is found.</li>
+                      <li>You can monitor progress anytime using the <strong>Track Case</strong> tab with your Case ID.</li>
+                      <li>Please keep this ID safe for any future communication with authorities.</li>
+                    </ul>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <button 
+                      onClick={() => {
+                        setActiveTab("track");
+                        setTrackingNumber(submittedCaseId);
+                      }}
+                      className="btn-primary px-8 py-3 text-sm font-bold rounded-lg flex items-center justify-center"
+                    >
+                      Go to Track Case
+                    </button>
+                    <button 
+                      onClick={() => setSubmittedCaseId("")}
+                      className="btn-secondary px-8 py-3 text-sm font-bold rounded-lg border border-white/20 text-slate-300 hover:text-white hover:bg-white/5 flex items-center justify-center"
+                    >
+                      Report Another
+                    </button>
+                  </div>
                 </div>
-              )}
+              ) : (
+                <>
+                  <div className="pb-4 mb-6 border-b border-white/10">
+                    <h2 className="text-xl font-bold text-white">Report Missing Person</h2>
+                    <p className="text-xs text-slate-400">Please provide accurate biometric information and a clear profile photo.</p>
+                  </div>
 
-              {formError && (
-                <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-bold animate-fadeIn">
-                  ❌ {formError}
-                </div>
-              )}
+                  {formError && (
+                    <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-bold animate-fadeIn">
+                      ❌ {formError}
+                    </div>
+                  )}
 
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 
                 {/* Profile Information */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -305,16 +353,9 @@ export default function PublicPortal() {
                     <label className="text-xs font-bold text-slate-300">Last Seen City *</label>
                     <select className={`h-[40px] px-3 rounded-[8px] bg-slate-950 border ${errors.last_seen_city ? 'border-red-500' : 'border-slate-700'} focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-white`} {...register("last_seen_city")}>
                       <option value="">Select City</option>
-                      <option value="Karachi">Karachi</option>
-                      <option value="Lahore">Lahore</option>
-                      <option value="Islamabad">Islamabad</option>
-                      <option value="Rawalpindi">Rawalpindi</option>
-                      <option value="Faisalabad">Faisalabad</option>
-                      <option value="Multan">Multan</option>
-                      <option value="Peshawar">Peshawar</option>
-                      <option value="Quetta">Quetta</option>
-                      <option value="Sialkot">Sialkot</option>
-                      <option value="Gujranwala">Gujranwala</option>
+                      {ALL_CITIES.map(city => (
+                        <option key={city} value={city}>{city}</option>
+                      ))}
                     </select>
                     {errors.last_seen_city && <p className="text-xs text-red-400">{errors.last_seen_city.message}</p>}
                   </div>
@@ -396,6 +437,8 @@ export default function PublicPortal() {
                   </button>
                 </div>
               </form>
+                </>
+              )}
             </div>
           )}
 

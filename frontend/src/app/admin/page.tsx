@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store";
 import { getRoleName, getRoleColor } from "@/lib/auth";
+import { ALL_CITIES } from "@/lib/utils";
 import api from "@/lib/api";
 import { User, Organization } from "@/types";
 import { useToast } from "@/components/shared/Toast";
@@ -502,16 +503,9 @@ export default function AdminPage() {
                   className="form-select"
                 >
                   <option value="All Cities">🇵🇰 All Pakistan (National Broadcast)</option>
-                  <option value="Karachi">Karachi</option>
-                  <option value="Lahore">Lahore</option>
-                  <option value="Islamabad">Islamabad</option>
-                  <option value="Rawalpindi">Rawalpindi</option>
-                  <option value="Peshawar">Peshawar</option>
-                  <option value="Quetta">Quetta</option>
-                  <option value="Multan">Multan</option>
-                  <option value="Faisalabad">Faisalabad</option>
-                  <option value="Hyderabad">Hyderabad</option>
-                  <option value="Sialkot">Sialkot</option>
+                  {ALL_CITIES.map(city => (
+                    <option key={city} value={city}>{city}</option>
+                  ))}
                 </select>
               </div>
 

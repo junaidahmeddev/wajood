@@ -12,7 +12,7 @@ import api from "@/lib/api";
 import { Case } from "@/types";
 import StatusBadge from "@/components/shared/StatusBadge";
 import PhotoUpload from "@/components/shared/PhotoUpload";
-import { formatDate } from "@/lib/utils";
+import { formatDate, ALL_CITIES } from "@/lib/utils";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import EmptyState from "@/components/shared/EmptyState";
 
@@ -281,11 +281,10 @@ export default function VolunteerPortal() {
                 <div>
                   <label className="form-label" htmlFor="sight-city">City *</label>
                   <select id="sight-city" className="form-select text-xs font-bold" {...register("city")}>
-                    <option value="Rawalpindi">Rawalpindi</option>
-                    <option value="Islamabad">Islamabad</option>
-                    <option value="Lahore">Lahore</option>
-                    <option value="Karachi">Karachi</option>
-                    <option value="Peshawar">Peshawar</option>
+                    <option value="">Select City</option>
+                    {ALL_CITIES.map(city => (
+                      <option key={city} value={city}>{city}</option>
+                    ))}
                   </select>
                 </div>
               </div>

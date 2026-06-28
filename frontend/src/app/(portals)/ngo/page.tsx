@@ -13,7 +13,7 @@ import { useAuthStore } from "@/store";
 import StatusBadge from "@/components/shared/StatusBadge";
 import PhotoUpload from "@/components/shared/PhotoUpload";
 import MatchCard from "@/components/shared/MatchCard";
-import { formatDate } from "@/lib/utils";
+import { formatDate, ALL_CITIES } from "@/lib/utils";
 import { useToast } from "@/components/shared/Toast";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import EmptyState from "@/components/shared/EmptyState";
@@ -377,16 +377,9 @@ export default function NgoPortal() {
                   <label className="form-label" htmlFor="found-city">City Found *</label>
                   <select id="found-city" className="form-select font-semibold" {...register("found_city")}>
                     <option value="">Select City</option>
-                    <option value="Karachi">Karachi</option>
-                    <option value="Lahore">Lahore</option>
-                    <option value="Islamabad">Islamabad</option>
-                    <option value="Rawalpindi">Rawalpindi</option>
-                    <option value="Peshawar">Peshawar</option>
-                    <option value="Quetta">Quetta</option>
-                    <option value="Multan">Multan</option>
-                    <option value="Faisalabad">Faisalabad</option>
-                    <option value="Hyderabad">Hyderabad</option>
-                    <option value="Sialkot">Sialkot</option>
+                    {ALL_CITIES.map(city => (
+                      <option key={city} value={city}>{city}</option>
+                    ))}
                   </select>
                   {errors.found_city && <p className="text-xs text-red-400 mt-1">{errors.found_city.message}</p>}
                 </div>

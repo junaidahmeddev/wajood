@@ -32,9 +32,14 @@ export const PAKISTAN_PROVINCES: Province[] = [
   },
   {
     name: "Gilgit-Baltistan",
-    districts: ["Gilgit", "Skardu", "Hunza", "Nagar", "Diamer", "Astore", "Ghanche", "Ghizer", "Kharmang", "Shigar"],
+    districts: ["Gilgit", "Skardu", "Diamer", "Astore", "Ghanche", "Shigar", "Kharmang", "Hunza", "Nagar", "Ghizer"],
   },
 ];
+
+// Flat list of all cities for dropdowns (sorted alphabetically)
+export const ALL_CITIES = PAKISTAN_PROVINCES
+  .flatMap(p => p.districts)
+  .sort((a, b) => a.localeCompare(b));
 
 // ─── Status Colors & Labels ───
 export function getStatusColor(status: CaseStatus): string {
