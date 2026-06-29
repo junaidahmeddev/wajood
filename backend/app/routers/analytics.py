@@ -47,6 +47,10 @@ async def get_overview_stats(
         select(func.count(FoundPerson.id)).filter(FoundPerson.status == FoundPersonStatus.RETURNED)
     )).scalar() or 0
 
+    matched_found = (await db.execute(
+        select(func.count(FoundPerson.id)).filter(FoundPerson.status == FoundPersonStatus.MATCHED)
+    )).scalar() or 0
+
     return {
         "missing_persons": {
             "total": total_missing,
@@ -58,6 +62,7 @@ async def get_overview_stats(
             "total": total_found,
             "unidentified": unidentified_found,
             "returned": returned_found,
+            "matched": matched_found,
         },
         "overall": {
             "total_cases": total_missing + total_found,

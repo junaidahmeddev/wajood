@@ -19,18 +19,18 @@ import { getStatusColor, getStatusLabel, formatDate, ALL_CITIES } from "@/lib/ut
 
 // Schema validation using Zod
 const reportSchema = z.object({
-  full_name: z.string().min(2, "Name must be at least 2 characters"),
+  full_name: z.string().min(2, "Name must be at least 2 characters").max(60, "Name is too long"),
   age: z.coerce.number().min(0, "Age must be positive").max(120, "Age must be under 120"),
   gender: z.enum(["MALE", "FEMALE", "OTHER", "UNKNOWN"]),
-  cnic: z.string().optional().or(z.literal("")),
-  last_seen_city: z.string().min(2, "City is required"),
-  last_seen_location: z.string().min(4, "Last seen description is required"),
+  cnic: z.string().max(15, "CNIC must be at most 15 characters").optional().or(z.literal("")),
+  last_seen_city: z.string().min(2, "City is required").max(100, "City is too long"),
+  last_seen_location: z.string().min(4, "Last seen description is required").max(200, "Location description is too long"),
   last_seen_date: z.string().min(1, "Last seen date is required"),
-  physical_description: z.string().min(4, "Physical description is required"),
-  clothing_description: z.string().min(4, "Clothing description is required"),
-  distinguishing_marks: z.string().optional().or(z.literal("")),
-  contact_name: z.string().min(2, "Contact name is required"),
-  contact_phone: z.string().min(8, "Contact phone must be valid"),
+  physical_description: z.string().min(4, "Physical description is required").max(500, "Description is too long"),
+  clothing_description: z.string().min(4, "Clothing description is required").max(500, "Description is too long"),
+  distinguishing_marks: z.string().max(500, "Description is too long").optional().or(z.literal("")),
+  contact_name: z.string().min(2, "Contact name is required").max(60, "Name is too long"),
+  contact_phone: z.string().min(10, "Contact phone must be at least 10 digits").max(20, "Contact phone is too long"),
 });
 
 type ReportFields = z.infer<typeof reportSchema>;
@@ -42,7 +42,7 @@ export default function PublicPortal() {
 
   const [activeTab, setActiveTab] = useState<"report" | "track" | "feed" | "my-cases">("report");
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
-  
+
   // Tracking states
   const [trackingNumber, setTrackingNumber] = useState("");
   const [trackingCase, setTrackingCase] = useState<Case | null>(null);
@@ -89,7 +89,7 @@ export default function PublicPortal() {
       if (fields.contact_name) formData.append("contact_name", fields.contact_name);
       if (fields.contact_phone) formData.append("contact_phone", fields.contact_phone);
       if (selectedPhoto) formData.append("photo", selectedPhoto);
-      
+
       return api.createCase(formData);
     },
     onSuccess: (data: any) => {
@@ -134,7 +134,7 @@ export default function PublicPortal() {
     try {
       const trackingCode = trackingNumber.trim();
       const matchedRes: any = await api.trackCase(trackingCode);
-      
+
       if (!matchedRes) {
         return; // Empty state will be handled by UI
       }
@@ -151,10 +151,11 @@ export default function PublicPortal() {
 
   // Filter client-side for dynamic feedback
   const filteredFeed = casesFeed.filter((c: any) => {
-    const matchesSearch = !searchTerm || 
-      c.person?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    const matchesSearch = !searchTerm ||
+      c.person?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.case_number?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCity = !filterCity || 
+    const matchesCity = !filterCity ||
       c.last_seen_city?.toLowerCase() === filterCity.toLowerCase();
     return matchesSearch && matchesCity;
   });
@@ -175,11 +176,11 @@ export default function PublicPortal() {
     const status = c.status?.toUpperCase() || "MISSING";
     const creationEvent = trackingTimeline.find((e: any) => e.event_type?.toUpperCase() === "CREATION");
     const sightingEvents = trackingTimeline.filter((e: any) => e.event_type?.toUpperCase() === "SIGHTING");
-    const matchEvent = trackingTimeline.find((e: any) => 
-      e.event_type?.toUpperCase() === "STATUS_UPDATE" && 
+    const matchEvent = trackingTimeline.find((e: any) =>
+      e.event_type?.toUpperCase() === "STATUS_UPDATE" &&
       ["MATCHED", "FOUND_ALIVE", "RESOLVED"].some(s => e.title?.toUpperCase().includes(s))
     );
-    
+
     const isResolved = ["FOUND_ALIVE", "DECEASED", "RESOLVED"].includes(status);
     const isMatched = isResolved || status === "MATCHED";
     const isInProcess = isMatched || status === "IN_PROCESS" || status === "REPORTED" || status === "MISSING";
@@ -220,7 +221,7 @@ export default function PublicPortal() {
       allowedRoles={[]}
     >
       <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 flex flex-col gap-8 pt-6">
-        
+
         {/* Header Header Header */}
         <div className="flex flex-col md:flex-row items-center justify-between w-full gap-4 text-white bg-slate-900/50 p-6 rounded-2xl border border-white/5">
           <div className="text-left flex-1">
@@ -249,11 +250,10 @@ export default function PublicPortal() {
                 setFormSuccess("");
                 setSubmittedCaseId("");
               }}
-              className={`h-[48px] px-6 text-sm font-bold border-b-2 transition-all whitespace-nowrap ${
-                activeTab === tab.id
-                  ? "border-emerald-500 text-emerald-400 bg-white/[0.02]"
-                  : "border-transparent text-slate-400 hover:text-slate-200"
-              }`}
+              className={`h-[48px] px-6 text-sm font-bold border-b-2 transition-all whitespace-nowrap ${activeTab === tab.id
+                ? "border-emerald-500 text-emerald-400 bg-white/[0.02]"
+                : "border-transparent text-slate-400 hover:text-slate-200"
+                }`}
             >
               {tab.label}
             </button>
@@ -262,7 +262,7 @@ export default function PublicPortal() {
 
         {/* Content Renderers */}
         <div className="w-full min-h-[400px]">
-          
+
           {/* ────────────────── REPORT TAB ────────────────── */}
           {activeTab === "report" && (
             <div className="bg-slate-900 border border-slate-700 p-6 sm:p-8 rounded-[12px] w-full">
@@ -271,12 +271,12 @@ export default function PublicPortal() {
                   <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center text-3xl mb-6 border border-emerald-500/30">✓</div>
                   <h2 className="text-2xl font-bold text-white mb-2">Your report has been submitted.</h2>
                   <p className="text-slate-400 mb-8 max-w-md">Thank you for taking this step.</p>
-                  
+
                   <div className="bg-slate-950 border border-emerald-500/30 p-6 rounded-xl w-full max-w-lg mb-8">
                     <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Generated Case ID</p>
                     <div className="flex items-center justify-center gap-3">
                       <span className="text-2xl font-mono font-bold text-emerald-400">{submittedCaseId}</span>
-                      <button 
+                      <button
                         onClick={() => {
                           navigator.clipboard.writeText(submittedCaseId);
                           toast.success("Copied to clipboard!");
@@ -300,7 +300,7 @@ export default function PublicPortal() {
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-4">
-                    <button 
+                    <button
                       onClick={() => {
                         setActiveTab("track");
                         setTrackingNumber(submittedCaseId);
@@ -309,7 +309,7 @@ export default function PublicPortal() {
                     >
                       Go to Track Case
                     </button>
-                    <button 
+                    <button
                       onClick={() => setSubmittedCaseId("")}
                       className="btn-secondary px-8 py-3 text-sm font-bold rounded-lg border border-white/20 text-slate-300 hover:text-white hover:bg-white/5 flex items-center justify-center"
                     >
@@ -331,121 +331,121 @@ export default function PublicPortal() {
                   )}
 
                   <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                
-                {/* Profile Information */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold text-slate-300">Full Name *</label>
-                    <input className={`h-[40px] px-3 rounded-[8px] bg-slate-950 border ${errors.full_name ? 'border-red-500' : 'border-slate-700'} focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-white`} placeholder="Enter full name" {...register("full_name")} />
-                    {errors.full_name && <p className="text-xs text-red-400">{errors.full_name.message}</p>}
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold text-slate-300">Age *</label>
-                    <input type="number" className={`h-[40px] px-3 rounded-[8px] bg-slate-950 border ${errors.age ? 'border-red-500' : 'border-slate-700'} focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-white`} placeholder="Years" {...register("age")} />
-                    {errors.age && <p className="text-xs text-red-400">{errors.age.message}</p>}
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold text-slate-300">Gender *</label>
-                    <select className="h-[40px] px-3 rounded-[8px] bg-slate-950 border border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-white" {...register("gender")}>
-                      <option value="UNKNOWN">Select gender</option>
-                      <option value="MALE">Male</option>
-                      <option value="FEMALE">Female</option>
-                      <option value="OTHER">Other</option>
-                    </select>
-                    {errors.gender && <p className="text-xs text-red-400">{errors.gender.message}</p>}
-                  </div>
-                </div>
 
-                {/* Telemetry and Location */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-white/5">
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold text-slate-300">Last Seen City *</label>
-                    <select className={`h-[40px] px-3 rounded-[8px] bg-slate-950 border ${errors.last_seen_city ? 'border-red-500' : 'border-slate-700'} focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-white`} {...register("last_seen_city")}>
-                      <option value="">Select City</option>
-                      {ALL_CITIES.map(city => (
-                        <option key={city} value={city}>{city}</option>
-                      ))}
-                    </select>
-                    {errors.last_seen_city && <p className="text-xs text-red-400">{errors.last_seen_city.message}</p>}
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold text-slate-300">Specific Location *</label>
-                    <input className={`h-[40px] px-3 rounded-[8px] bg-slate-950 border ${errors.last_seen_location ? 'border-red-500' : 'border-slate-700'} focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-white`} placeholder="e.g., Tariq Road, Near Market" {...register("last_seen_location")} />
-                    {errors.last_seen_location && <p className="text-xs text-red-400">{errors.last_seen_location.message}</p>}
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold text-slate-300">Last Seen Date &amp; Time *</label>
-                    <input type="datetime-local" className={`h-[40px] px-3 rounded-[8px] bg-slate-950 border ${errors.last_seen_date ? 'border-red-500' : 'border-slate-700'} focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-white`} {...register("last_seen_date")} />
-                    {errors.last_seen_date && <p className="text-xs text-red-400">{errors.last_seen_date.message}</p>}
-                  </div>
-                </div>
+                    {/* Profile Information */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-bold text-slate-300">Full Name *</label>
+                        <input className={`h-[40px] px-3 rounded-[8px] bg-slate-950 border ${errors.full_name ? 'border-red-500' : 'border-slate-700'} focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-white`} placeholder="Enter full name" {...register("full_name")} />
+                        {errors.full_name && <p className="text-xs text-red-400">{errors.full_name.message}</p>}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-bold text-slate-300">Age *</label>
+                        <input type="number" className={`h-[40px] px-3 rounded-[8px] bg-slate-950 border ${errors.age ? 'border-red-500' : 'border-slate-700'} focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-white`} placeholder="Years" {...register("age")} />
+                        {errors.age && <p className="text-xs text-red-400">{errors.age.message}</p>}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-bold text-slate-300">Gender *</label>
+                        <select className="h-[40px] px-3 rounded-[8px] bg-slate-950 border border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-white" {...register("gender")}>
+                          <option value="UNKNOWN">Select gender</option>
+                          <option value="MALE">Male</option>
+                          <option value="FEMALE">Female</option>
+                          <option value="OTHER">Other</option>
+                        </select>
+                        {errors.gender && <p className="text-xs text-red-400">{errors.gender.message}</p>}
+                      </div>
+                    </div>
 
-                {/* Additional Details */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-white/5">
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold text-slate-300">CNIC Number (Optional)</label>
-                    <input className="h-[40px] px-3 rounded-[8px] bg-slate-950 border border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-white font-mono" placeholder="42201-XXXXXXX-X" {...register("cnic")} />
-                  </div>
-                  <div className="flex flex-col gap-2 md:col-span-2">
-                    <label className="text-xs font-bold text-slate-300">Distinguishing Marks (Optional)</label>
-                    <input className="h-[40px] px-3 rounded-[8px] bg-slate-950 border border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-white" placeholder="e.g., mole on left cheek, scars..." {...register("distinguishing_marks")} />
-                  </div>
-                </div>
+                    {/* Telemetry and Location */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-white/5">
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-bold text-slate-300">Last Seen City *</label>
+                        <select className={`h-[40px] px-3 rounded-[8px] bg-slate-950 border ${errors.last_seen_city ? 'border-red-500' : 'border-slate-700'} focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-white`} {...register("last_seen_city")}>
+                          <option value="">Select City</option>
+                          {ALL_CITIES.map(city => (
+                            <option key={city} value={city}>{city}</option>
+                          ))}
+                        </select>
+                        {errors.last_seen_city && <p className="text-xs text-red-400">{errors.last_seen_city.message}</p>}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-bold text-slate-300">Specific Location *</label>
+                        <input className={`h-[40px] px-3 rounded-[8px] bg-slate-950 border ${errors.last_seen_location ? 'border-red-500' : 'border-slate-700'} focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-white`} placeholder="e.g., Tariq Road, Near Market" {...register("last_seen_location")} />
+                        {errors.last_seen_location && <p className="text-xs text-red-400">{errors.last_seen_location.message}</p>}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-bold text-slate-300">Last Seen Date &amp; Time *</label>
+                        <input type="datetime-local" className={`h-[40px] px-3 rounded-[8px] bg-slate-950 border ${errors.last_seen_date ? 'border-red-500' : 'border-slate-700'} focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-white`} {...register("last_seen_date")} />
+                        {errors.last_seen_date && <p className="text-xs text-red-400">{errors.last_seen_date.message}</p>}
+                      </div>
+                    </div>
 
-                {/* Descriptions */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-white/5">
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold text-slate-300">Physical Description *</label>
-                    <textarea rows={3} className={`p-3 rounded-[8px] bg-slate-950 border ${errors.physical_description ? 'border-red-500' : 'border-slate-700'} focus:border-emerald-500 outline-none text-sm text-white resize-none`} placeholder="Height, hair color, build..." {...register("physical_description")} />
-                    {errors.physical_description && <p className="text-xs text-red-400">{errors.physical_description.message}</p>}
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold text-slate-300">Clothing Description *</label>
-                    <textarea rows={3} className={`p-3 rounded-[8px] bg-slate-950 border ${errors.clothing_description ? 'border-red-500' : 'border-slate-700'} focus:border-emerald-500 outline-none text-sm text-white resize-none`} placeholder="Color of shirt, type of shoes..." {...register("clothing_description")} />
-                    {errors.clothing_description && <p className="text-xs text-red-400">{errors.clothing_description.message}</p>}
-                  </div>
-                </div>
+                    {/* Additional Details */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-white/5">
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-bold text-slate-300">CNIC Number (Optional)</label>
+                        <input className="h-[40px] px-3 rounded-[8px] bg-slate-950 border border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-white font-mono" placeholder="42201-XXXXXXX-X" {...register("cnic")} />
+                      </div>
+                      <div className="flex flex-col gap-2 md:col-span-2">
+                        <label className="text-xs font-bold text-slate-300">Distinguishing Marks (Optional)</label>
+                        <input className="h-[40px] px-3 rounded-[8px] bg-slate-950 border border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-white" placeholder="e.g., mole on left cheek, scars..." {...register("distinguishing_marks")} />
+                      </div>
+                    </div>
 
-                {/* Photo Upload */}
-                <div className="pt-6 border-t border-white/5">
-                  <div className="flex flex-col gap-2 max-w-md">
-                    <label className="text-xs font-bold text-slate-300">Profile Photo Upload * (Required)</label>
-                    <PhotoUpload onFileChange={(file) => setSelectedPhoto(file)} />
-                    {selectedPhoto && <p className="text-xs text-emerald-400">✓ {selectedPhoto.name} selected</p>}
-                  </div>
-                </div>
+                    {/* Descriptions */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-white/5">
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-bold text-slate-300">Physical Description *</label>
+                        <textarea rows={3} className={`p-3 rounded-[8px] bg-slate-950 border ${errors.physical_description ? 'border-red-500' : 'border-slate-700'} focus:border-emerald-500 outline-none text-sm text-white resize-none`} placeholder="Height, hair color, build..." {...register("physical_description")} />
+                        {errors.physical_description && <p className="text-xs text-red-400">{errors.physical_description.message}</p>}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-bold text-slate-300">Clothing Description *</label>
+                        <textarea rows={3} className={`p-3 rounded-[8px] bg-slate-950 border ${errors.clothing_description ? 'border-red-500' : 'border-slate-700'} focus:border-emerald-500 outline-none text-sm text-white resize-none`} placeholder="Color of shirt, type of shoes..." {...register("clothing_description")} />
+                        {errors.clothing_description && <p className="text-xs text-red-400">{errors.clothing_description.message}</p>}
+                      </div>
+                    </div>
 
-                {/* Contact Information */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-white/5">
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold text-slate-300">Guardian/Contact Name *</label>
-                    <input className={`h-[40px] px-3 rounded-[8px] bg-slate-950 border ${errors.contact_name ? 'border-red-500' : 'border-slate-700'} focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-white`} placeholder="Guardian Name" {...register("contact_name")} />
-                    {errors.contact_name && <p className="text-xs text-red-400">{errors.contact_name.message}</p>}
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold text-slate-300">Contact Phone Number *</label>
-                    <input className={`h-[40px] px-3 rounded-[8px] bg-slate-950 border ${errors.contact_phone ? 'border-red-500' : 'border-slate-700'} focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-white font-mono`} placeholder="03XX-XXXXXXX" {...register("contact_phone")} />
-                    {errors.contact_phone && <p className="text-xs text-red-400">{errors.contact_phone.message}</p>}
-                  </div>
-                </div>
+                    {/* Photo Upload */}
+                    <div className="pt-6 border-t border-white/5">
+                      <div className="flex flex-col gap-2 max-w-md">
+                        <label className="text-xs font-bold text-slate-300">Profile Photo Upload * (Required)</label>
+                        <PhotoUpload onFileChange={(file) => setSelectedPhoto(file)} />
+                        {selectedPhoto && <p className="text-xs text-emerald-400">✓ {selectedPhoto.name} selected</p>}
+                      </div>
+                    </div>
 
-                {/* Submit Panel */}
-                <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-white/10">
-                  <button
-                    type="submit"
-                    disabled={createCaseMutation.isPending}
-                    className="w-full sm:w-auto h-[44px] px-8 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg transition flex items-center justify-center gap-2 disabled:opacity-50"
-                  >
-                    {createCaseMutation.isPending && (
-                      <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                    )}
-                    {createCaseMutation.isPending ? "Registering Case..." : "Create Case"}
-                  </button>
-                </div>
-              </form>
+                    {/* Contact Information */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-white/5">
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-bold text-slate-300">Guardian/Contact Name *</label>
+                        <input className={`h-[40px] px-3 rounded-[8px] bg-slate-950 border ${errors.contact_name ? 'border-red-500' : 'border-slate-700'} focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-white`} placeholder="Guardian Name" {...register("contact_name")} />
+                        {errors.contact_name && <p className="text-xs text-red-400">{errors.contact_name.message}</p>}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-xs font-bold text-slate-300">Contact Phone Number *</label>
+                        <input className={`h-[40px] px-3 rounded-[8px] bg-slate-950 border ${errors.contact_phone ? 'border-red-500' : 'border-slate-700'} focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-white font-mono`} placeholder="03XX-XXXXXXX" {...register("contact_phone")} />
+                        {errors.contact_phone && <p className="text-xs text-red-400">{errors.contact_phone.message}</p>}
+                      </div>
+                    </div>
+
+                    {/* Submit Panel */}
+                    <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-white/10">
+                      <button
+                        type="submit"
+                        disabled={createCaseMutation.isPending}
+                        className="w-full sm:w-auto h-[44px] px-8 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg transition flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        {createCaseMutation.isPending && (
+                          <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                        )}
+                        {createCaseMutation.isPending ? "Registering Case..." : "Create Case"}
+                      </button>
+                    </div>
+                  </form>
                 </>
               )}
             </div>
@@ -454,13 +454,13 @@ export default function PublicPortal() {
           {/* ────────────────── TRACK CASE TAB ────────────────── */}
           {activeTab === "track" && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10 w-full items-start">
-              
+
               {/* Tracker Query Sidebar */}
               <div className="lg:col-span-1 flex flex-col gap-6 sticky top-24">
                 <div className="bg-slate-900 border border-slate-700 rounded-[12px] p-6 lg:p-8">
                   <h3 className="text-lg font-bold text-white mb-2">Search Tracking Registry</h3>
                   <p className="text-xs text-slate-400 mb-4">Enter case reference number, CNIC, or full name to query state telemetry.</p>
-                  
+
                   <form onSubmit={handleTrackCase} className="flex flex-col gap-3">
                     <input
                       type="text"
@@ -495,19 +495,18 @@ export default function PublicPortal() {
                   </div>
                 ) : trackingCase ? (
                   <div className="bg-slate-900 border border-slate-700 rounded-[12px] p-8 lg:p-10 animate-fadeIn">
-                    
+
                     {/* Case ID and badge */}
                     <div className="flex justify-between items-center pb-3 border-b border-white/10 mb-6">
                       <div className="flex flex-col">
                         <span className="text-xs font-mono font-bold text-slate-400">Tracking Code</span>
                         <span className="text-md font-bold text-white font-mono">{trackingCase.case_number}</span>
                       </div>
-                      <span className={`px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider ${
-                        trackingCase.status === "FOUND_ALIVE" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" :
+                      <span className={`px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider ${trackingCase.status === "FOUND_ALIVE" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/20" :
                         trackingCase.status === "MATCHED" ? "bg-amber-500/20 text-amber-400 border border-amber-500/20" :
-                        trackingCase.status === "IN_PROCESS" ? "bg-blue-500/20 text-blue-400 border border-blue-500/20" :
-                        "bg-red-500/20 text-red-400 border border-red-500/20"
-                      }`}>
+                          trackingCase.status === "IN_PROCESS" ? "bg-blue-500/20 text-blue-400 border border-blue-500/20" :
+                            "bg-red-500/20 text-red-400 border border-red-500/20"
+                        }`}>
                         {getStatusLabel(trackingCase.status)}
                       </span>
                     </div>
@@ -534,39 +533,35 @@ export default function PublicPortal() {
 
                     {/* Timeline Milestones */}
                     <h4 className="text-base font-bold text-white mt-4 mb-8">Vertical Investigation Milestones</h4>
-                    
+
                     <div className="relative pl-6 border-l border-white/10 space-y-8 py-2">
                       {getTimelineSteps(trackingCase).map((step, idx) => (
                         <div key={idx} className="relative flex gap-5">
-                          <div className={`absolute -left-[35px] top-0.5 w-[22px] h-[22px] rounded-full border-2 flex items-center justify-center text-[10px] font-bold ${
-                            step.state === 'completed'
-                              ? "bg-emerald-600 border-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.5)]" 
-                              : step.state === 'current'
+                          <div className={`absolute -left-[35px] top-0.5 w-[22px] h-[22px] rounded-full border-2 flex items-center justify-center text-[10px] font-bold ${step.state === 'completed'
+                            ? "bg-emerald-600 border-emerald-500 text-white shadow-[0_0_10px_rgba(16,185,129,0.5)]"
+                            : step.state === 'current'
                               ? "bg-indigo-600 border-indigo-400 text-white shadow-[0_0_15px_rgba(99,102,241,0.6)] animate-pulse"
                               : "bg-slate-950 border-slate-800 text-slate-600"
-                          }`}>
+                            }`}>
                             {step.state === 'completed' ? "✓" : idx + 1}
                           </div>
                           <div className="w-full">
                             <div className="flex justify-between items-start w-full">
-                              <h5 className={`text-sm font-bold leading-none mb-1 ${
-                                step.state === 'completed' ? "text-emerald-400" : 
-                                step.state === 'current' ? "text-indigo-400" : 
-                                "text-slate-500"
-                              }`}>{step.title}</h5>
+                              <h5 className={`text-sm font-bold leading-none mb-1 ${step.state === 'completed' ? "text-emerald-400" :
+                                step.state === 'current' ? "text-indigo-400" :
+                                  "text-slate-500"
+                                }`}>{step.title}</h5>
                               {step.timestamp && (
-                                <span className={`text-[10px] font-mono px-2 py-0.5 rounded ${
-                                  step.state === 'completed' ? "bg-emerald-500/10 text-emerald-500" :
+                                <span className={`text-[10px] font-mono px-2 py-0.5 rounded ${step.state === 'completed' ? "bg-emerald-500/10 text-emerald-500" :
                                   step.state === 'current' ? "bg-indigo-500/10 text-indigo-400 animate-pulse" :
-                                  "bg-white/5 text-slate-500"
-                                }`}>
+                                    "bg-white/5 text-slate-500"
+                                  }`}>
                                   {step.timestamp}
                                 </span>
                               )}
                             </div>
-                            <p className={`text-[13px] max-w-md leading-relaxed ${
-                              step.state === 'pending' ? "text-slate-600" : "text-slate-400"
-                            }`}>{step.desc}</p>
+                            <p className={`text-[13px] max-w-md leading-relaxed ${step.state === 'pending' ? "text-slate-600" : "text-slate-400"
+                              }`}>{step.desc}</p>
                           </div>
                         </div>
                       ))}
@@ -610,44 +605,50 @@ export default function PublicPortal() {
 
           {/* ────────────────── CASES FEED TAB ────────────────── */}
           {activeTab === "feed" && (
-            <div className="flex flex-col gap-6">
-              
-              {/* Filter controls */}
-              <div className="flex flex-col sm:flex-row gap-4 bg-slate-900 border border-slate-700 p-4 rounded-xl w-full">
-                <input
-                  type="text"
-                  placeholder="Filter by name or ID..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="flex-1 h-[40px] px-3.5 rounded-lg bg-slate-950 border border-slate-700 focus:border-indigo-500 outline-none text-sm text-white"
-                />
-                <div className="w-full sm:w-64">
-                  <CityFilter value={filterCity} onChange={(c) => setFilterCity(c)} />
+            <div className="flex flex-col gap-8 w-full">
+
+              {/* Header & Filter controls */}
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-2">
+                <div className="mb-1 md:mb-0">
+                  <h3 className="text-2xl font-bold text-white mb-1">Active Cases Registry</h3>
+                  <p className="text-sm text-slate-400">Browse nationwide missing person reports.</p>
+                </div>
+                <div className="flex flex-col sm:flex-row items-end gap-3 w-full md:w-auto">
+                  <input
+                    type="text"
+                    placeholder="Search by name or ID..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full sm:w-[260px] h-[40px] px-3.5 rounded-lg bg-slate-900 border border-slate-700 focus:border-emerald-500 outline-none text-sm text-white transition-colors"
+                  />
+                  <div className="w-full sm:w-[220px]">
+                    <CityFilter value={filterCity} onChange={(c) => setFilterCity(c)} />
+                  </div>
                 </div>
               </div>
 
               {/* Feed Grid */}
               {isFeedLoading ? (
-                <div className="flex items-center justify-center py-20 w-full bg-slate-900 border border-slate-700 rounded-xl min-h-[300px]">
-                  <LoadingSpinner text="Connecting telemetry network..." />
+                <div className="flex items-center justify-center py-20 w-full min-h-[300px]">
+                  <LoadingSpinner text="Loading cases..." />
                 </div>
               ) : filteredFeed.length === 0 ? (
-                <div className="bg-slate-900 border border-slate-700 rounded-xl p-10 flex flex-col items-center justify-center text-center text-slate-400 min-h-[300px] w-full">
-                  <span className="text-3xl mb-2 opacity-50">📭</span>
-                  <p className="text-sm font-semibold">No cases found</p>
-                  <p className="text-xs">There are currently no active records matching the selected filters.</p>
+                <div className="bg-slate-900 border border-slate-700 rounded-xl p-12 flex flex-col items-center justify-center text-center text-slate-400 min-h-[300px] w-full">
+                  <span className="text-4xl mb-4 opacity-50">📭</span>
+                  <p className="text-lg font-bold text-slate-300">No active cases found</p>
+                  <p className="text-sm mt-1 max-w-md">There are currently no records matching your selected filters. Adjust your search criteria to view more.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
                   {filteredFeed.map((c: any) => (
                     <div key={c.id} className="bg-slate-900 border border-slate-700 rounded-xl overflow-hidden flex flex-col hover:border-emerald-500/40 transition duration-200">
-                      
+
                       {/* Card Image area with absolute badge */}
                       <div className="relative h-48 w-full bg-slate-950">
                         {c.photo_url ? (
                           <img
                             src={getPhotoUrl(c.photo_url) || ""}
-                            alt={c.person?.full_name || c.full_name}
+                            alt={c.full_name || "Missing Person"}
                             className="w-full h-full object-cover"
                           />
                         ) : (
@@ -656,12 +657,11 @@ export default function PublicPortal() {
                             <span className="text-[10px] uppercase font-bold tracking-wider">No Photo Provided</span>
                           </div>
                         )}
-                        <span className={`absolute top-4 right-4 px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-wider shadow-md ${
-                          c.status === "FOUND_ALIVE" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/20" :
+                        <span className={`absolute top-4 right-4 px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-wider shadow-md ${c.status === "FOUND_ALIVE" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/20" :
                           c.status === "MATCHED" ? "bg-amber-500/20 text-amber-400 border-amber-500/20" :
-                          c.status === "IN_PROCESS" ? "bg-blue-500/20 text-blue-400 border-blue-500/20" :
-                          "bg-red-500/20 text-red-400 border-red-500/20"
-                        }`}>
+                            c.status === "IN_PROCESS" ? "bg-blue-500/20 text-blue-400 border-blue-500/20" :
+                              "bg-red-500/20 text-red-400 border-red-500/20"
+                          }`}>
                           {getStatusLabel(c.status)}
                         </span>
                       </div>
@@ -670,11 +670,11 @@ export default function PublicPortal() {
                       <div className="p-5 flex-1 flex flex-col justify-between gap-4">
                         <div>
                           <h3 className="text-md font-bold text-white mb-1 truncate">
-                            {c.person?.full_name || c.full_name}
+                            {c.full_name || "Unknown"}
                           </h3>
                           <div className="text-xs text-slate-400 space-y-1 mt-2">
-                            <div><span className="text-slate-600 font-bold">Age:</span> {c.person?.age_min || c.person?.age || "?"} yrs</div>
-                            <div><span className="text-slate-600 font-bold">City:</span> {c.last_seen_city || c.city || "Unknown"}</div>
+                            <div><span className="text-slate-600 font-bold">Age:</span> {c.age ? `${c.age} yrs` : "Unknown"}</div>
+                            <div><span className="text-slate-600 font-bold">City:</span> {c.last_seen_city || "Unknown"}</div>
                             <div><span className="text-slate-600 font-bold">Last Seen Date:</span> {formatDate(c.last_seen_date)}</div>
                           </div>
                         </div>
@@ -702,35 +702,67 @@ export default function PublicPortal() {
               {isFeedLoading ? (
                 <div className="text-center py-20 text-slate-400 font-medium w-full">Loading your files...</div>
               ) : myCases.length === 0 ? (
-                <div className="p-10 text-center text-slate-500 text-sm w-full">
-                  You have not reported any cases yet.
+                <div className="p-16 flex flex-col items-center justify-center text-center text-slate-500 text-sm w-full border-t border-white/5">
+                  <span className="text-3xl mb-3 opacity-40">📝</span>
+                  <p className="font-semibold text-slate-400">No cases reported yet.</p>
+                  <p className="text-xs mt-1">When you submit a missing person report, it will appear here.</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto w-full">
                   <table className="w-full text-left border-collapse min-w-[600px]">
                     <thead>
-                      <tr className="border-b border-white/10 bg-white/[0.02] text-xs font-bold text-slate-400 uppercase tracking-wider">
-                        <th className="p-4">Case #</th>
-                        <th className="p-4">Name</th>
-                        <th className="p-4">Status</th>
-                        <th className="p-4">Date Created</th>
+                      <tr className="border-b border-white/5 bg-slate-900/50 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                        <th className="py-4 px-4 font-medium">Case #</th>
+                        <th className="py-4 px-4 font-medium">Name</th>
+                        <th className="py-4 px-4 font-medium">Status</th>
+                        <th className="py-4 px-4 font-medium">Date Created</th>
+                        <th className="py-4 px-4 font-medium text-right">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5 text-sm text-slate-300">
                       {myCases.map((c: any) => (
-                        <tr key={c.id} className="hover:bg-white/[0.01] transition">
-                          <td className="p-4 font-mono text-xs font-bold text-indigo-400">{c.case_number}</td>
-                          <td className="p-4 font-semibold text-white">{c.person?.full_name || c.full_name}</td>
-                          <td className="p-4">
-                            <span className="px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-wider" style={{
-                              borderColor: `${getStatusColor(c.status)}20`,
-                              backgroundColor: `${getStatusColor(c.status)}20`,
-                              color: getStatusColor(c.status),
-                            }}>
+                        <tr key={c.id} className="hover:bg-slate-800/60 transition-colors group border-b border-white/5 last:border-0">
+                          <td className="py-5 px-4 font-mono text-xs font-bold text-indigo-400">{c.case_number}</td>
+                          <td className="py-5 px-4 font-semibold text-slate-200">{c.full_name || "Unknown"}</td>
+                          <td className="py-5 px-4">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider ${
+                              c.status === "FOUND_ALIVE" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" :
+                              c.status === "MATCHED" ? "bg-teal-500/10 text-teal-400 border-teal-500/20" :
+                              c.status === "IN_PROCESS" ? "bg-blue-500/10 text-blue-400 border-blue-500/20" :
+                              "bg-red-500/10 text-red-400 border-red-500/20"
+                            }`}>
                               {getStatusLabel(c.status)}
                             </span>
                           </td>
-                          <td className="p-4 text-xs text-slate-500">{formatDate(c.created_at)}</td>
+                          <td className="py-5 px-4 text-xs text-slate-500">{formatDate(c.created_at)}</td>
+                          <td className="py-5 px-4 text-right">
+                            <button
+                              onClick={async () => {
+                                setActiveTab("track");
+                                setTrackingNumber(c.case_number);
+                                setTrackingError("");
+                                setTrackingCase(null);
+                                setTrackingTimeline([]);
+                                setHasSearched(true);
+                                setIsTrackingLoading(true);
+                                try {
+                                  const matchedRes: any = await api.trackCase(c.case_number);
+                                  if (matchedRes) {
+                                    setTrackingCase(matchedRes);
+                                    const timelineRes: any = await api.trackCaseTimeline(c.case_number);
+                                    setTrackingTimeline(Array.isArray(timelineRes) ? timelineRes : []);
+                                  }
+                                } catch {
+                                  setTrackingError("Invalid Tracking ID or Case not found.");
+                                } finally {
+                                  setIsTrackingLoading(false);
+                                }
+                              }}
+                              className="px-4 py-1.5 text-xs font-bold text-slate-300 border border-slate-600 rounded-md hover:bg-slate-700 hover:text-white transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                            >
+                              View Details
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>

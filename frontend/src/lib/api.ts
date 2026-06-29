@@ -211,6 +211,10 @@ class ApiService {
     return apiClient.get("/api/analytics/dashboard");
   }
 
+  async getAnalyticsOverview() {
+    return apiClient.get("/api/analytics/overview");
+  }
+
   async getAuditLogs() {
     return apiClient.get("/api/analytics/audit-logs");
   }

@@ -105,7 +105,8 @@ export default function NgoPortal() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const [activeTab, setActiveTab] = useState<"dashboard" | "register" | "found-list" | "matches" | "handover">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "register" | "found-list" | "matches">("dashboard");
+  const [selectedFoundPerson, setSelectedFoundPerson] = useState<Person | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   
   const [shelterCapacity, setShelterCapacity] = useState({ filled: 32, total: 50 });
@@ -141,7 +142,17 @@ export default function NgoPortal() {
     },
   });
 
-  const handoverCases = cases.filter((c: Case) => c.status.toLowerCase() === "matched");
+  const { data: overviewStats, isLoading: isLoadingStats, refetch: refetchStats } = useQuery({
+    queryKey: ["analyticsOverview"],
+    queryFn: async () => {
+      try {
+        const res: any = await api.getAnalyticsOverview();
+        return res;
+      } catch (e) {
+        return { total_found: 0, matched: 0, unidentified: 0, returned: 0 };
+      }
+    },
+  });
 
   const { register, handleSubmit, watch, reset, formState: { errors } } = useForm<FoundPersonFields>({
     resolver: zodResolver(foundPersonSchema),
@@ -181,23 +192,23 @@ export default function NgoPortal() {
       return api.createPerson(formData);
     },
     onSuccess: async (createdRes: any) => {
-      const msg = "Found person registered successfully! AI Biometric indexing & comparison queued.";
+      const msg = "✅ Found Person Registered!";
       setFormSuccess(msg);
       toast.success(msg);
       reset();
       setSelectedPhoto(null);
       queryClient.invalidateQueries({ queryKey: ["ngoFoundPersons"] });
       
-      // Automatically trigger matching for all MISSING cases
-      api.getCases().then((list: any) => {
-        if (Array.isArray(list)) {
-          list.forEach((c: any) => api.runMatching(c.id).catch(() => {}));
-        }
-      });
       if (createdRes?.id) {
+        // Run AI matching asynchronously in background for the new record
         api.runMatching(createdRes.id).catch(() => {});
       }
-      setActiveTab("matches");
+      
+      // Auto-switch to Found List tab
+      setActiveTab("found-list");
+      
+      // Force Dashboard Stats to Update
+      refetchStats();
     },
     onError: (err: any) => {
       const errMsg = err.message || "Failed to register found person.";
@@ -268,7 +279,7 @@ export default function NgoPortal() {
 
         {/* Navigation Tabs */}
         <div className="flex border-b border-white/10 gap-2 overflow-x-auto pb-1">
-          {(["dashboard", "register", "found-list", "matches", "handover"] as const).map((tab) => (
+          {(["dashboard", "register", "found-list", "matches"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => { setActiveTab(tab); setFormSuccess(""); setFormError(""); }}
@@ -292,23 +303,35 @@ export default function NgoPortal() {
         {/* ─── Tab Contents ─── */}
         {activeTab === "dashboard" && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="flex justify-between items-end">
+              <h3 className="text-xl font-bold text-white">Dashboard Overview</h3>
+              <button 
+                onClick={() => refetchStats()} 
+                className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded flex items-center gap-2 transition"
+              >
+                <span>🔄</span> Refresh Stats
+              </button>
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="glass-card p-6 text-center space-y-2 border-emerald-500/20">
-                <span className="text-4xl">🤝</span>
-                <div className="text-4xl font-black text-white font-mono">{foundPersons.length}</div>
-                <div className="text-xs text-slate-400 uppercase tracking-wider font-bold">Found Registered</div>
+                <span className="text-3xl opacity-80">🤝</span>
+                <div className="text-3xl font-black text-white font-mono">{isLoadingStats ? "-" : (overviewStats?.found_persons?.total || 0)}</div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Total Found</div>
               </div>
-              <div className="glass-card p-6 text-center space-y-2 border-amber-500/20">
-                <span className="text-4xl">🔔</span>
-                <div className="text-4xl font-black text-amber-400 font-mono">{handoverCases.length}</div>
-                <div className="text-xs text-slate-400 uppercase tracking-wider font-bold">Pending Family Handover</div>
+              <div className="glass-card p-6 text-center space-y-2 border-teal-500/20">
+                <span className="text-3xl opacity-80">⚡</span>
+                <div className="text-3xl font-black text-teal-400 font-mono">{isLoadingStats ? "-" : (overviewStats?.found_persons?.matched || 0)}</div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">AI Matched</div>
               </div>
-              <div className="glass-card p-6 text-center space-y-2 border-indigo-500/20">
-                <span className="text-4xl">⏳</span>
-                <div className="text-4xl font-black text-indigo-400 font-mono">
-                  {foundPersons.filter((p: any) => p.status === "UNIDENTIFIED").length}
-                </div>
-                <div className="text-xs text-slate-400 uppercase tracking-wider font-bold">Unidentified Patients</div>
+              <div className="glass-card p-6 text-center space-y-2 border-slate-500/30">
+                <span className="text-3xl opacity-80">❓</span>
+                <div className="text-3xl font-black text-slate-300 font-mono">{isLoadingStats ? "-" : (overviewStats?.found_persons?.unidentified || 0)}</div>
+                <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Unidentified</div>
+              </div>
+              <div className="glass-card p-6 text-center space-y-2 border-blue-500/20">
+                <span className="text-3xl opacity-80">🏡</span>
+                <div className="text-3xl font-black text-blue-400 font-mono">{isLoadingStats ? "-" : (overviewStats?.found_persons?.returned || 0)}</div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Returned Home</div>
               </div>
             </div>
 
@@ -328,7 +351,9 @@ export default function NgoPortal() {
                           Location: {p.found_location}, {p.city} | Found: {formatDate(p.found_date || "")}
                         </p>
                       </div>
-                      <StatusBadge status="UNIDENTIFIED" />
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider bg-slate-500/20 text-slate-300 border-slate-500/30">
+                        {p.status || "UNIDENTIFIED"}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -469,38 +494,51 @@ export default function NgoPortal() {
             ) : foundPersons.length === 0 ? (
               <EmptyState title="No Citizens Found" icon="🏡" description="No found citizens logged by shelter." />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {foundPersons.map((p: Person) => (
-                  <div key={p.id} className="glass-card overflow-hidden flex flex-col h-full bg-white/[0.01] border-white/10 shadow-lg">
-                    <div className="h-48 bg-slate-950 flex items-center justify-center border-b border-white/10 overflow-hidden relative">
-                      {p.photo_url ? (
-                        <img
-                          src={p.photo_url.startsWith("http") ? p.photo_url : `http://localhost:8000${p.photo_url}`}
-                          alt="Found"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-5xl opacity-20">👤</span>
-                      )}
-                      <div className="absolute top-3 right-3">
-                        <StatusBadge status={p.is_alive ? "UNIDENTIFIED" : "DECEASED"} />
-                      </div>
-                    </div>
-                    <div className="p-5 flex-1 flex flex-col justify-between">
-                      <div>
-                        <h4 className="font-bold text-slate-100 text-sm line-clamp-2">
-                          {p.physical_description}
-                        </h4>
-                        <div className="text-xs text-slate-400 mt-3 space-y-1.5 border-t border-white/5 pt-3">
-                          <div><strong className="text-slate-300">Location:</strong> {p.found_location}, {p.city}</div>
-                          <div><strong className="text-slate-300">Intake Date:</strong> {formatDate(p.found_date || "")}</div>
-                          {p.hospital_name && <div><strong className="text-slate-300">Hospital:</strong> {p.hospital_name}</div>}
-                          {p.morgue_id && <div><strong className="text-slate-300">Morgue ID:</strong> {p.morgue_id}</div>}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <div className="overflow-x-auto rounded-xl border border-white/10 bg-slate-900/50">
+                <table className="w-full text-left text-sm text-slate-300">
+                  <thead className="bg-slate-950/80 text-slate-400 text-xs uppercase font-bold border-b border-white/10">
+                    <tr>
+                      <th className="px-4 py-3">Photo</th>
+                      <th className="px-4 py-3">ID</th>
+                      <th className="px-4 py-3">~Age</th>
+                      <th className="px-4 py-3">Gender</th>
+                      <th className="px-4 py-3">City</th>
+                      <th className="px-4 py-3">Location</th>
+                      <th className="px-4 py-3">Alive Status</th>
+                      <th className="px-4 py-3">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {foundPersons.map((p: Person) => (
+                      <tr key={p.id} onClick={() => setSelectedFoundPerson(p)} className="hover:bg-white/[0.05] transition cursor-pointer group">
+                        <td className="px-4 py-3">
+                          <div className="w-[50px] h-[50px] bg-slate-800 rounded overflow-hidden flex items-center justify-center border border-white/10">
+                            {p.photo_url ? (
+                              <img 
+                                src={p.photo_url.startsWith("http") ? p.photo_url : `http://localhost:8000${p.photo_url}`} 
+                                alt="Found Person" 
+                                className="w-full h-full object-cover" 
+                              />
+                            ) : (
+                              <span className="text-xl opacity-50">👤</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 font-mono text-xs">{p.id.slice(0, 8)}</td>
+                        <td className="px-4 py-3">{p.approximate_age || "-"}</td>
+                        <td className="px-4 py-3">{p.gender || "-"}</td>
+                        <td className="px-4 py-3">{p.found_city || p.city || "-"}</td>
+                        <td className="px-4 py-3 truncate max-w-[150px]">{p.found_location}</td>
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${p.is_alive ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"}`}>
+                            {p.is_alive ? "ALIVE" : "DECEASED"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">{formatDate(p.found_date || "")}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
@@ -584,6 +622,100 @@ export default function NgoPortal() {
           </div>
         )}
       </div>
+
+      {/* Citizen Detail View Modal */}
+      {selectedFoundPerson && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="glass-card w-full max-w-4xl max-h-[90vh] overflow-y-auto border-white/10 shadow-2xl relative">
+            <button 
+              onClick={() => setSelectedFoundPerson(null)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white text-xl z-10"
+            >
+              ✕
+            </button>
+            <div className="p-8 sm:p-10 flex flex-col md:flex-row gap-8">
+              {/* Left Side: Photo & Quick Status */}
+              <div className="w-full md:w-1/3 flex flex-col items-center border-r border-white/10 pr-0 md:pr-8">
+                <div className="w-48 h-48 bg-slate-900 rounded-xl overflow-hidden border-2 border-white/10 mb-6 flex items-center justify-center">
+                  {selectedFoundPerson.photo_url ? (
+                    <img 
+                      src={selectedFoundPerson.photo_url.startsWith("http") ? selectedFoundPerson.photo_url : `http://localhost:8000${selectedFoundPerson.photo_url}`} 
+                      alt="Citizen" className="w-full h-full object-cover" 
+                    />
+                  ) : (
+                    <span className="text-6xl opacity-20">👤</span>
+                  )}
+                </div>
+                <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-md mb-2 ${selectedFoundPerson.is_alive ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "bg-red-500/20 text-red-400 border border-red-500/30"}`}>
+                  {selectedFoundPerson.is_alive ? "ALIVE / PATIENT" : "DECEASED / REMAINS"}
+                </span>
+                <span className="text-[10px] font-mono text-slate-500 mt-2">ID: {selectedFoundPerson.id}</span>
+              </div>
+              
+              {/* Right Side: Details Grid */}
+              <div className="w-full md:w-2/3 flex flex-col">
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h2 className="text-2xl font-black text-white">Found Citizen Record</h2>
+                    <p className="text-xs text-slate-400 uppercase tracking-widest mt-1">Official Registry Entry</p>
+                  </div>
+                  <button 
+                    onClick={() => window.print()} 
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-indigo-500/20 transition flex items-center gap-2"
+                  >
+                    <span>🖨️</span> Print / PDF
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-y-4 gap-x-8 text-sm bg-slate-950/40 p-5 rounded-xl border border-white/5 mb-6">
+                  <div>
+                    <span className="block text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Age (Approx)</span>
+                    <span className="text-slate-200 font-semibold">{selectedFoundPerson.approximate_age || "Unknown"}</span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Gender</span>
+                    <span className="text-slate-200 font-semibold">{selectedFoundPerson.gender || "Unknown"}</span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">City</span>
+                    <span className="text-slate-200 font-semibold">{selectedFoundPerson.found_city || selectedFoundPerson.city || "N/A"}</span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Specific Location</span>
+                    <span className="text-slate-200 font-semibold">{selectedFoundPerson.found_location || "N/A"}</span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Date Found</span>
+                    <span className="text-slate-200 font-semibold">{formatDate(selectedFoundPerson.found_date || "")}</span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">{selectedFoundPerson.is_alive ? "Hospital" : "Morgue ID"}</span>
+                    <span className="text-slate-200 font-semibold">{selectedFoundPerson.is_alive ? (selectedFoundPerson.hospital_name || "N/A") : (selectedFoundPerson.morgue_id || "N/A")}</span>
+                  </div>
+                </div>
+
+                {/* Bottom Section: Descriptions */}
+                <div className="space-y-4">
+                  <div>
+                    <span className="block text-xs text-indigo-400 font-bold mb-2">Physical Description & Attire</span>
+                    <div className="bg-slate-900/80 p-4 rounded-lg border border-white/10 text-slate-300 text-sm max-h-32 overflow-y-auto whitespace-pre-wrap leading-relaxed">
+                      {selectedFoundPerson.physical_description || "No description provided."}
+                    </div>
+                  </div>
+                  {selectedFoundPerson.notes && (
+                    <div>
+                      <span className="block text-xs text-amber-400 font-bold mb-2">Additional Notes</span>
+                      <div className="bg-slate-900/80 p-4 rounded-lg border border-white/10 text-slate-300 text-sm max-h-32 overflow-y-auto whitespace-pre-wrap leading-relaxed">
+                        {selectedFoundPerson.notes}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </PortalLayout>
   );
 }
