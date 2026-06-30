@@ -104,6 +104,7 @@ export interface Person {
   status?: string;
   match_status?: string;
   age?: number;
+  approximate_age?: number;
   created_at: string;
   updated_at: string;
 }

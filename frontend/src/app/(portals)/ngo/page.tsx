@@ -106,7 +106,7 @@ export default function NgoPortal() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const [activeTab, setActiveTab] = useState<"dashboard" | "register" | "found-list" | "matches">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "register" | "found-list" | "matches" | "handover">("dashboard");
   const [selectedFoundPerson, setSelectedFoundPerson] = useState<Person | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   
@@ -177,6 +177,8 @@ export default function NgoPortal() {
       return Array.isArray(res) ? res : [];
     },
   });
+
+  const handoverCases = cases.filter((c: Case) => c.status === "MATCHED" || c.status === "CONFIRMED" || c.status === "resolved");
 
   // Fetch registered found persons by this organization
   const { data: foundPersons = [], isLoading: isLoadingFound } = useQuery({
@@ -324,7 +326,7 @@ export default function NgoPortal() {
 
         {/* Navigation Tabs */}
         <div className="flex border-b border-white/10 gap-2 overflow-x-auto pb-1">
-          {(["dashboard", "register", "found-list", "matches"] as const).map((tab) => (
+          {(["dashboard", "register", "found-list", "matches", "handover"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => { setActiveTab(tab); setFormSuccess(""); setFormError(""); }}
