@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import * as XLSX from "xlsx";
 
 import PortalLayout from "@/components/shared/PortalLayout";
 import api from "@/lib/api";
@@ -123,6 +124,50 @@ export default function NgoPortal() {
       }).catch(console.error);
     }
   }, [user]);
+
+  const exportToExcel = () => {
+    if (!foundPersons || foundPersons.length === 0) return;
+
+    // Build the data array
+    const data = foundPersons.map((p: Person) => ({
+      "ID": p.id,
+      "Approximate Age": p.approximate_age || "-",
+      "Gender": p.gender || "-",
+      "City": p.found_city || "-",
+      "Location": p.found_location || "-",
+      "Status": p.is_alive ? "ALIVE" : "DECEASED",
+      "Date Found": p.found_date ? formatDate(p.found_date) : "-",
+      "Physical Description": p.physical_description || "-",
+      "Notes": p.notes || "-"
+    }));
+
+    // Create a new workbook and worksheet
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet([]);
+
+    // Add main official header
+    XLSX.utils.sheet_add_aoa(ws, [["Wajood — Official Found Citizen Registry"]], { origin: "A1" });
+    
+    // Add the JSON data starting at row 3 (A3)
+    XLSX.utils.sheet_add_json(ws, data, { origin: "A3" });
+
+    // Setting column widths for better formatting
+    ws["!cols"] = [
+      { wch: 36 }, // ID
+      { wch: 15 }, // Age
+      { wch: 10 }, // Gender
+      { wch: 15 }, // City
+      { wch: 25 }, // Location
+      { wch: 12 }, // Status
+      { wch: 15 }, // Date
+      { wch: 40 }, // Description
+      { wch: 30 }  // Notes
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, "Found Citizens");
+    const dateStr = new Date().toISOString().split("T")[0];
+    XLSX.writeFile(wb, `Wajood_Registry_${dateStr}.xlsx`);
+  };
 
   // Fetch active missing persons for comparison count
   const { data: cases = [], isLoading: isLoadingCases } = useQuery({
@@ -488,7 +533,15 @@ export default function NgoPortal() {
 
         {activeTab === "found-list" && (
           <div className="space-y-6">
-            <h3 className="text-xl font-black text-white">Registered Found Citizens</h3>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <h3 className="text-xl font-black text-white">Registered Found Citizens</h3>
+              <button
+                onClick={exportToExcel}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-emerald-500/20 transition flex items-center gap-2"
+              >
+                <span>📊</span> Export to Excel
+              </button>
+            </div>
             {isLoadingFound ? (
               <LoadingSpinner text="Querying shelter registries..." />
             ) : foundPersons.length === 0 ? (
@@ -626,90 +679,104 @@ export default function NgoPortal() {
       {/* Citizen Detail View Modal */}
       {selectedFoundPerson && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="glass-card w-full max-w-4xl max-h-[90vh] overflow-y-auto border-white/10 shadow-2xl relative">
+          <div className="glass-card w-full max-w-4xl max-h-[100vh] overflow-y-auto border-white/10 shadow-2xl relative printable-area report-container bg-slate-950">
             <button 
               onClick={() => setSelectedFoundPerson(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white text-xl z-10"
+              className="absolute top-4 right-4 text-slate-400 hover:text-white text-xl z-10 no-print"
             >
               ✕
             </button>
-            <div className="p-8 sm:p-10 flex flex-col md:flex-row gap-8">
-              {/* Left Side: Photo & Quick Status */}
-              <div className="w-full md:w-1/3 flex flex-col items-center border-r border-white/10 pr-0 md:pr-8">
-                <div className="w-48 h-48 bg-slate-900 rounded-xl overflow-hidden border-2 border-white/10 mb-6 flex items-center justify-center">
-                  {selectedFoundPerson.photo_url ? (
-                    <img 
-                      src={selectedFoundPerson.photo_url.startsWith("http") ? selectedFoundPerson.photo_url : `http://localhost:8000${selectedFoundPerson.photo_url}`} 
-                      alt="Citizen" className="w-full h-full object-cover" 
-                    />
-                  ) : (
-                    <span className="text-6xl opacity-20">👤</span>
-                  )}
-                </div>
-                <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-md mb-2 ${selectedFoundPerson.is_alive ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "bg-red-500/20 text-red-400 border border-red-500/30"}`}>
-                  {selectedFoundPerson.is_alive ? "ALIVE / PATIENT" : "DECEASED / REMAINS"}
-                </span>
-                <span className="text-[10px] font-mono text-slate-500 mt-2">ID: {selectedFoundPerson.id}</span>
+            <div className="p-4 sm:p-6 print:p-0">
+              {/* Print Only Official Header (Moved outside flex-row for perfect top alignment) */}
+              <div className="hidden print:flex w-full flex-col items-center justify-center border-b-2 border-black pb-4 mb-6">
+                <h1 className="text-3xl font-black uppercase tracking-widest text-black">Wajood</h1>
+                <p className="text-sm font-bold text-gray-800 uppercase tracking-widest">Official Found Citizen Registry</p>
+                <p className="text-xs text-gray-500 font-mono mt-2">Print Date: {new Date().toLocaleDateString()} | Record ID: {selectedFoundPerson.id.slice(0, 8)}</p>
               </div>
-              
-              {/* Right Side: Details Grid */}
-              <div className="w-full md:w-2/3 flex flex-col">
-                <div className="flex justify-between items-start mb-6">
-                  <div>
-                    <h2 className="text-2xl font-black text-white">Found Citizen Record</h2>
-                    <p className="text-xs text-slate-400 uppercase tracking-widest mt-1">Official Registry Entry</p>
-                  </div>
-                  <button 
-                    onClick={() => window.print()} 
-                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-indigo-500/20 transition flex items-center gap-2"
-                  >
-                    <span>🖨️</span> Print / PDF
-                  </button>
-                </div>
 
-                <div className="grid grid-cols-2 gap-y-4 gap-x-8 text-sm bg-slate-950/40 p-5 rounded-xl border border-white/5 mb-6">
-                  <div>
-                    <span className="block text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Age (Approx)</span>
-                    <span className="text-slate-200 font-semibold">{selectedFoundPerson.approximate_age || "Unknown"}</span>
+              <div className="flex flex-col md:flex-row print:flex-col print:items-center gap-6">
+                {/* Left Side: Photo & Quick Status */}
+                <div className="w-full md:w-1/3 print:w-full flex flex-col items-center md:border-r border-white/10 print:border-none pr-0 md:pr-8 print:pr-0">
+                  <div className="w-48 h-48 bg-slate-900 print:bg-transparent rounded-xl overflow-hidden border-2 border-white/10 print:border-gray-300 mb-6 flex items-center justify-center">
+                    {selectedFoundPerson.photo_url ? (
+                      <img 
+                        src={selectedFoundPerson.photo_url.startsWith("http") ? selectedFoundPerson.photo_url : `http://localhost:8000${selectedFoundPerson.photo_url}`} 
+                        alt="Citizen" className="w-full h-full object-cover" 
+                      />
+                    ) : (
+                      <span className="text-6xl opacity-20">👤</span>
+                    )}
                   </div>
-                  <div>
-                    <span className="block text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Gender</span>
-                    <span className="text-slate-200 font-semibold">{selectedFoundPerson.gender || "Unknown"}</span>
-                  </div>
-                  <div>
-                    <span className="block text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">City</span>
-                    <span className="text-slate-200 font-semibold">{selectedFoundPerson.found_city || selectedFoundPerson.city || "N/A"}</span>
-                  </div>
-                  <div>
-                    <span className="block text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Specific Location</span>
-                    <span className="text-slate-200 font-semibold">{selectedFoundPerson.found_location || "N/A"}</span>
-                  </div>
-                  <div>
-                    <span className="block text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">Date Found</span>
-                    <span className="text-slate-200 font-semibold">{formatDate(selectedFoundPerson.found_date || "")}</span>
-                  </div>
-                  <div>
-                    <span className="block text-[10px] text-slate-500 uppercase tracking-wider font-bold mb-1">{selectedFoundPerson.is_alive ? "Hospital" : "Morgue ID"}</span>
-                    <span className="text-slate-200 font-semibold">{selectedFoundPerson.is_alive ? (selectedFoundPerson.hospital_name || "N/A") : (selectedFoundPerson.morgue_id || "N/A")}</span>
-                  </div>
+                  <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-md mb-2 ${selectedFoundPerson.is_alive ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 print:border-black print:text-black print:bg-transparent" : "bg-red-500/20 text-red-400 border border-red-500/30 print:border-black print:text-black print:bg-transparent"}`}>
+                    {selectedFoundPerson.is_alive ? "ALIVE / PATIENT" : "DECEASED / REMAINS"}
+                  </span>
+                  <span className="text-[10px] font-mono text-slate-500 print:text-black mt-2">ID: {selectedFoundPerson.id}</span>
                 </div>
-
-                {/* Bottom Section: Descriptions */}
-                <div className="space-y-4">
-                  <div>
-                    <span className="block text-xs text-indigo-400 font-bold mb-2">Physical Description & Attire</span>
-                    <div className="bg-slate-900/80 p-4 rounded-lg border border-white/10 text-slate-300 text-sm max-h-32 overflow-y-auto whitespace-pre-wrap leading-relaxed">
-                      {selectedFoundPerson.physical_description || "No description provided."}
+                
+                {/* Right Side: Details Grid */}
+                <div className="w-full md:w-2/3 print:w-full flex flex-col">
+                  <div className="flex justify-between items-start mb-6 no-print">
+                    <div>
+                      <h2 className="text-2xl font-black text-white">Found Citizen Record</h2>
+                      <p className="text-xs text-slate-400 uppercase tracking-widest mt-1">Official Registry Entry</p>
+                    </div>
+                    <div className="flex flex-col items-end gap-2 no-print">
+                      <button 
+                        onClick={() => window.print()} 
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-lg shadow-indigo-500/20 transition flex items-center gap-2"
+                      >
+                        <span>🖨️</span> Print / PDF
+                      </button>
+                      <span className="text-[9px] text-slate-500 max-w-[150px] text-right">
+                        * Turn off &apos;Headers and Footers&apos; in browser print settings for best results.
+                      </span>
                     </div>
                   </div>
-                  {selectedFoundPerson.notes && (
+
+                  <div className="grid grid-cols-2 gap-y-4 gap-x-8 text-sm bg-slate-950/40 print:bg-transparent p-5 print:p-0 rounded-xl border border-white/5 print:border-none mb-6">
                     <div>
-                      <span className="block text-xs text-amber-400 font-bold mb-2">Additional Notes</span>
-                      <div className="bg-slate-900/80 p-4 rounded-lg border border-white/10 text-slate-300 text-sm max-h-32 overflow-y-auto whitespace-pre-wrap leading-relaxed">
-                        {selectedFoundPerson.notes}
+                      <span className="block text-[10px] text-slate-500 print:text-gray-600 uppercase tracking-wider font-bold mb-1">Age (Approx)</span>
+                      <span className="text-slate-200 print:text-black font-semibold">{selectedFoundPerson.approximate_age || "Unknown"}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] text-slate-500 print:text-gray-600 uppercase tracking-wider font-bold mb-1">Gender</span>
+                      <span className="text-slate-200 print:text-black font-semibold">{selectedFoundPerson.gender || "Unknown"}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] text-slate-500 print:text-gray-600 uppercase tracking-wider font-bold mb-1">City</span>
+                      <span className="text-slate-200 print:text-black font-semibold">{selectedFoundPerson.found_city || selectedFoundPerson.city || "N/A"}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] text-slate-500 print:text-gray-600 uppercase tracking-wider font-bold mb-1">Specific Location</span>
+                      <span className="text-slate-200 print:text-black font-semibold">{selectedFoundPerson.found_location || "N/A"}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] text-slate-500 print:text-gray-600 uppercase tracking-wider font-bold mb-1">Date Found</span>
+                      <span className="text-slate-200 print:text-black font-semibold">{formatDate(selectedFoundPerson.found_date || "")}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] text-slate-500 print:text-gray-600 uppercase tracking-wider font-bold mb-1">{selectedFoundPerson.is_alive ? "Hospital" : "Morgue ID"}</span>
+                      <span className="text-slate-200 print:text-black font-semibold">{selectedFoundPerson.is_alive ? (selectedFoundPerson.hospital_name || "N/A") : (selectedFoundPerson.morgue_id || "N/A")}</span>
+                    </div>
+                  </div>
+
+                  {/* Bottom Section: Descriptions */}
+                  <div className="space-y-3">
+                    <div>
+                      <span className="block text-xs text-indigo-400 print:text-black font-bold mb-1">Physical Description & Attire</span>
+                      <div className="bg-slate-900/80 print:bg-transparent print:border-gray-300 print:text-black p-3 rounded-lg border border-white/10 text-slate-300 text-sm h-24 overflow-hidden whitespace-pre-wrap leading-relaxed">
+                        {selectedFoundPerson.physical_description || "No description provided."}
                       </div>
                     </div>
-                  )}
+                    {selectedFoundPerson.notes && (
+                      <div>
+                        <span className="block text-xs text-amber-400 print:text-black font-bold mb-1">Additional Notes</span>
+                        <div className="bg-slate-900/80 print:bg-transparent print:border-gray-300 print:text-black p-3 rounded-lg border border-white/10 text-slate-300 text-sm h-16 overflow-hidden whitespace-pre-wrap leading-relaxed">
+                          {selectedFoundPerson.notes}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
