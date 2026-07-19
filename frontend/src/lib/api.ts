@@ -227,6 +227,14 @@ class ApiService {
     return apiClient.get("/api/analytics/cases-by-province");
   }
 
+  async getCasesByCity() {
+    return apiClient.get("/api/analytics/by-city");
+  }
+
+  async getCasesByMonth() {
+    return apiClient.get("/api/analytics/by-month");
+  }
+
   async getRecentCases(limit = 10) {
     return apiClient.get(`/api/analytics/recent-cases?limit=${limit}`);
   }

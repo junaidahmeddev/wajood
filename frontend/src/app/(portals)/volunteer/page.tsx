@@ -19,8 +19,9 @@ import EmptyState from "@/components/shared/EmptyState";
 import SearchBar from "@/components/shared/SearchBar";
 import CityFilter from "@/components/shared/CityFilter";
 import { useAuthStore } from "@/store";
+import { useToast } from "@/components/shared/Toast";
 
-const LeafletMap = dynamic(() => import("@/components/shared/LeafletMap"), {
+const Map = dynamic(() => import("@/components/shared/LeafletMap"), {
   ssr: false,
 });
 
@@ -48,11 +49,13 @@ interface FieldTask {
 export default function VolunteerPortal() {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
+  const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState<"cases" | "map" | "sighting" | "history" | "tasks">("cases");
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCity, setFilterCity] = useState("");
+  const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
 
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
@@ -81,6 +84,24 @@ export default function VolunteerPortal() {
     },
   });
 
+  useEffect(() => {
+    if (selectedCaseId) {
+      setValue("case_id", selectedCaseId);
+      const matchingCase = casesList.find((c: Case) => c.id === selectedCaseId);
+      if (matchingCase?.last_seen_city) {
+        setValue("city", matchingCase.last_seen_city);
+      }
+    }
+  }, [selectedCaseId, setValue, casesList]);
+
+  useEffect(() => {
+    if (selectedCaseId) {
+      setTimeout(() => {
+        document.getElementById("sighting-form-section")?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    }
+  }, [selectedCaseId]);
+
   // Mutation to submit sighting
   const reportSightingMutation = useMutation({
     mutationFn: async (fields: SightingFields) => {
@@ -97,13 +118,16 @@ export default function VolunteerPortal() {
       return api.addSighting(fields.case_id, formData);
     },
     onSuccess: () => {
+      toast.success("Sighting Reported ✅");
       setFormSuccess("Sighting report successfully uploaded! Family and Officers have been alerted.");
       reset();
       setSelectedPhoto(null);
-      setActiveTab("history");
+      setSelectedCaseId(null);
+      queryClient.invalidateQueries({ queryKey: ["volunteerCases"] });
     },
     onError: (err: any) => {
       setFormError(err.message || "Failed to submit sighting report.");
+      toast.error(err.message || "Failed to submit sighting report.");
     },
   });
 
@@ -220,8 +244,8 @@ export default function VolunteerPortal() {
 
                       <button
                         onClick={() => {
-                          setValue("case_id", c.id);
-                          setActiveTab("sighting");
+                          setSelectedCaseId(c.id);
+                          setActiveTab("map");
                         }}
                         className="mt-4 w-full py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs transition shadow-lg shadow-violet-600/20"
                       >
@@ -243,7 +267,178 @@ export default function VolunteerPortal() {
               The Leaflet map markers indicate the last seen locations of active missing person cases in your region. Check markers for coordinates.
             </p>
             <div className="border border-white/5 rounded-xl overflow-hidden shadow-xl">
-              <LeafletMap markerTitle="Active Volunteer Search Precinct" />
+              <Map cases={casesList} onReportSighting={setSelectedCaseId} />
+            </div>
+
+            {/* Sighting Form Appears Below Map */}
+            {selectedCaseId && (
+              <div id="sighting-form-section" className="glass-card p-8 max-w-3xl mx-auto scroll-mt-24 mt-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-lg font-bold text-violet-400">Report a Sighting</h3>
+                  <button
+                    onClick={() => setSelectedCaseId(null)}
+                    className="text-xs text-slate-400 hover:text-slate-200"
+                  >
+                    Clear Selection ✕
+                  </button>
+                </div>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                  {formError && (
+                    <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold">
+                      ❌ {formError}
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="form-label" htmlFor="sight-case-map">Select Target Case *</label>
+                    <select id="sight-case-map" className="form-select text-xs font-bold w-full" {...register("case_id")} required>
+                      <option value="">Choose Case Folder</option>
+                      {casesList.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.person?.full_name} ({c.case_number})
+                        </option>
+                      ))}
+                    </select>
+                    {errors.case_id && <p className="text-xs text-red-400 mt-1">{errors.case_id.message}</p>}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="form-label" htmlFor="sight-loc-map">Sighting Location *</label>
+                      <input id="sight-loc-map" placeholder="e.g. Golra Mor Bus Stop" className="form-input text-xs" {...register("location")} />
+                      {errors.location && <p className="text-xs text-red-400 mt-1">{errors.location.message}</p>}
+                    </div>
+                    <div>
+                      <label className="form-label" htmlFor="sight-city-map">City *</label>
+                      <select id="sight-city-map" className="form-select text-xs font-bold" {...register("city")}>
+                        <option value="">Select City</option>
+                        {ALL_CITIES.map(city => (
+                          <option key={city} value={city}>{city}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="form-label" htmlFor="sight-date-map">Sighting Date/Time *</label>
+                      <input id="sight-date-map" type="datetime-local" className="form-input text-xs font-mono" {...register("sighting_date")} />
+                      {errors.sighting_date && <p className="text-xs text-red-400 mt-1">{errors.sighting_date.message}</p>}
+                    </div>
+                    <div>
+                      <label className="form-label" htmlFor="sight-conf-map">Confidence Level *</label>
+                      <select id="sight-conf-map" className="form-select text-xs font-bold" {...register("confidence")}>
+                        <option value="HIGH">High (Certain)</option>
+                        <option value="MEDIUM">Medium (Probable)</option>
+                        <option value="LOW">Low (Unsure)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="form-label" htmlFor="sight-desc-map">Physical Description of Person Seen *</label>
+                    <textarea
+                      id="sight-desc-map"
+                      placeholder="Detail clothes worn, physical state, direction they were heading..."
+                      className="form-input text-xs min-h-[80px]"
+                      {...register("description")}
+                    />
+                    {errors.description && <p className="text-xs text-red-400 mt-1">{errors.description.message}</p>}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                    <div>
+                      <label className="form-label" htmlFor="sight-phone-map">Volunteer Phone *</label>
+                      <input id="sight-phone-map" className="form-input text-xs font-mono" readOnly {...register("phone")} />
+                    </div>
+                    <div>
+                      <PhotoUpload onFileChange={(file) => setSelectedPhoto(file)} label="Upload Sighting Image (Optional)" />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 justify-end pt-6 border-t border-white/5">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCaseId(null)}
+                      className="px-6 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-sm font-semibold text-slate-300 transition"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={reportSightingMutation.isPending}
+                      className="btn-primary px-6 py-2.5 flex items-center gap-2"
+                      style={{ background: "linear-gradient(135deg, #8b5cf6, #7c3aed)" }}
+                    >
+                      {reportSightingMutation.isPending && (
+                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      )}
+                      <span>{reportSightingMutation.isPending ? "Submitting..." : "Submit Sighting"}</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* Nearby Cases Section */}
+            <div className="space-y-6 mt-8">
+              <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                <h3 className="text-md font-bold text-slate-200">🔍 Nearby Cases</h3>
+                <span className="text-xs text-slate-400 font-mono">{casesList.length} cases active</span>
+              </div>
+              {isLoadingCases ? (
+                <LoadingSpinner text="Loading cases..." />
+              ) : casesList.length === 0 ? (
+                <EmptyState title="No Cases" icon="🔍" description="No active cases found." />
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {casesList.map((c: Case) => {
+                    const daysMissing = Math.max(1, Math.floor((Date.now() - new Date(c.created_at).getTime()) / (1000 * 60 * 60 * 24)));
+                    return (
+                      <div key={c.id} className="glass-card p-5 flex flex-col justify-between border-white/5 hover:border-violet-500/40 transition">
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-start">
+                            <span className="text-xs font-mono text-violet-400 font-bold">{c.case_number}</span>
+                            <StatusBadge status={c.status} />
+                          </div>
+
+                          <div className="w-full h-44 rounded-xl bg-slate-900 overflow-hidden relative">
+                            {c.person?.photo_url ? (
+                              <img src={c.person.photo_url.startsWith("http") ? c.person.photo_url : `http://localhost:8000${c.person.photo_url}`} alt="P" className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-4xl">👤</div>
+                            )}
+                          </div>
+
+                          <div>
+                            <h4 className="text-base font-black text-white">{c.person?.full_name || "Unknown"}</h4>
+                            <p className="text-xs text-slate-300 mt-1">Age: {c.person?.age_min || "?"} yrs | City: {c.last_seen_city}</p>
+                            <p className="text-[11px] text-amber-400 font-semibold mt-1">⏳ {daysMissing} days missing</p>
+                          </div>
+
+                          {c.person?.distinguishing_marks && (
+                            <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/5 text-[11px] text-slate-300">
+                              <span className="text-violet-400 font-bold">Marks:</span> {c.person.distinguishing_marks}
+                            </div>
+                          )}
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            setSelectedCaseId(c.id);
+                          }}
+                          className="mt-4 w-full py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs transition shadow-lg shadow-violet-600/20"
+                        >
+                          I Saw This Person
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         )}
