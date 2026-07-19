@@ -189,12 +189,12 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-6 w-full relative items-start">
+          <div className="flex flex-col md:flex-row gap-6 w-full relative items-stretch">
             {/* Desktop connecting line */}
             <div className="hidden md:block absolute top-[20px] left-[10%] right-[10%] h-[2px] bg-white/10 -z-10" />
 
             {HOW_IT_WORKS.map((item, idx) => (
-              <div key={item.step} className="saas-card bg-slate-900/50 border border-white/10 rounded-xl p-[20px] flex flex-col items-center text-center w-full md:w-1/4 h-full relative">
+              <div key={item.step} className="saas-card bg-slate-900/50 border border-white/10 rounded-xl p-[20px] flex flex-col items-center text-center w-full md:w-1/4 relative">
                 {/* Mobile connecting arrow */}
                 {idx !== HOW_IT_WORKS.length - 1 && (
                   <div className="md:hidden absolute -bottom-[20px] left-1/2 -translate-x-1/2 text-white/20">↓</div>
