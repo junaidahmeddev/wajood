@@ -13,6 +13,7 @@ import StatusBadge from "@/components/shared/StatusBadge";
 import { formatDate } from "@/lib/utils";
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
 import EmptyState from "@/components/shared/EmptyState";
+import { useToast } from "@/components/shared/Toast";
 
 // Schema for forensic remains register
 const remainsSchema = z.object({
@@ -40,6 +41,7 @@ interface CustodyLog {
 
 export default function ForensicsPortal() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<"remains" | "register" | "custody" | "dna-match">("remains");
   const [formSuccess, setFormSuccess] = useState("");
   const [formError, setFormError] = useState("");
@@ -63,6 +65,15 @@ export default function ForensicsPortal() {
       const res = await api.getPersons();
       const list = Array.isArray(res) ? res : [];
       return list.filter((p: Person) => !p.is_alive);
+    },
+  });
+
+  // Query all DNA match requests (all found persons)
+  const { data: matchRequestsList = [], isLoading: isLoadingMatches } = useQuery({
+    queryKey: ["dnaMatchRequests"],
+    queryFn: async () => {
+      const res = await api.getPersons();
+      return Array.isArray(res) ? res : [];
     },
   });
 
@@ -90,6 +101,7 @@ export default function ForensicsPortal() {
       return api.createPerson(formData);
     },
     onSuccess: (data: any) => {
+      toast.success("Sample Submitted ✅");
       setFormSuccess("Forensic remains registered successfully! Secure custody signature generated.");
       reset();
       
@@ -105,10 +117,12 @@ export default function ForensicsPortal() {
       setCustodyLogs(prev => [newLog, ...prev]);
 
       queryClient.invalidateQueries({ queryKey: ["forensicRemains"] });
-      setActiveTab("remains");
+      queryClient.invalidateQueries({ queryKey: ["dnaMatchRequests"] });
+      setActiveTab("dna-match");
     },
     onError: (err: any) => {
       setFormError(err.message || "Failed to register forensics remains folder.");
+      toast.error(err.message || "Failed to register forensics remains folder.");
     },
   });
 
@@ -117,6 +131,38 @@ export default function ForensicsPortal() {
     setFormSuccess("");
     registerRemainsMutation.mutate(data);
   };
+
+  // Status mapping
+  const mapStatusToBackend = (status: string) => {
+    if (status === "PENDING") return "UNIDENTIFIED";
+    if (status === "MATCHED") return "MATCHED";
+    if (status === "NO_MATCH") return "RETURNED";
+    return "UNIDENTIFIED";
+  };
+
+  const mapStatusToUI = (status: string) => {
+    if (status === "UNIDENTIFIED") return "PENDING";
+    if (status === "MATCHED") return "MATCHED";
+    if (status === "RETURNED" || status === "DECEASED") return "NO_MATCH";
+    return "PENDING";
+  };
+
+  // Status Change Mutation
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const formData = new FormData();
+      formData.append("status_update", mapStatusToBackend(status));
+      return api.updatePerson(id, formData);
+    },
+    onSuccess: () => {
+      toast.success("Status Updated Successfully");
+      queryClient.invalidateQueries({ queryKey: ["dnaMatchRequests"] });
+      queryClient.invalidateQueries({ queryKey: ["forensicRemains"] });
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "Failed to update status.");
+    }
+  });
 
   const [selectedCaseForDNA, setSelectedCaseForDNA] = useState<Person | null>(null);
   const [dnaProfiles, setDnaProfiles] = useState<Record<string, string>>({});
@@ -452,7 +498,51 @@ export default function ForensicsPortal() {
               Matches between DNA profiles uploaded for remains and reference DNA samples provided by families.
             </p>
 
-            <EmptyState title="No Matches" icon="🧬" description="DNA sequencing analyzer currently scanning matching loci... No parent reference matches confirmed yet." />
+            {isLoadingMatches ? (
+              <LoadingSpinner text="Retrieving match queue..." />
+            ) : matchRequestsList.length === 0 ? (
+              <EmptyState title="No Match Requests" icon="🧬" description="DNA sequencing analyzer currently scanning matching loci... No parent reference matches confirmed yet." />
+            ) : (
+              <div className="glass-card overflow-x-auto shadow-xl border border-white/10 bg-slate-950/60">
+                <table className="w-full text-left border-collapse text-xs text-slate-300 font-sans">
+                  <thead>
+                    <tr className="bg-white/[0.03] border-b border-white/10 text-slate-400">
+                      <th className="p-4 font-extrabold uppercase">Sample ID</th>
+                      <th className="p-4 font-extrabold uppercase">Type</th>
+                      <th className="p-4 font-extrabold uppercase">Status</th>
+                      <th className="p-4 font-extrabold uppercase text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {matchRequestsList.map((rem: Person) => {
+                      const currentUIStatus = mapStatusToUI(rem.status || "UNIDENTIFIED");
+                      return (
+                        <tr key={rem.id} className="hover:bg-white/[0.02] transition">
+                          <td className="p-4 font-mono font-bold text-orange-400">{rem.id.slice(0, 8)}</td>
+                          <td className="p-4 font-semibold">{rem.is_alive ? "Living Found" : "Deceased Remains"}</td>
+                          <td className="p-4">
+                            <select
+                              value={currentUIStatus}
+                              onChange={(e) => updateStatusMutation.mutate({ id: rem.id, status: e.target.value })}
+                              className="form-select text-xs bg-slate-900 border-white/10 text-white rounded py-1 px-2 focus:border-orange-500"
+                            >
+                              <option value="PENDING">PENDING</option>
+                              <option value="MATCHED">MATCHED</option>
+                              <option value="NO_MATCH">NO_MATCH</option>
+                            </select>
+                          </td>
+                          <td className="p-4 text-right">
+                            <span className="text-[10px] text-slate-500 font-mono">
+                              Last updated: {new Date(rem.updated_at || rem.created_at).toLocaleDateString()}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 
