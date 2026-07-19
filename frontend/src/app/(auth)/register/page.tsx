@@ -100,10 +100,10 @@ export default function RegisterPage() {
         ...payload,
         role: payload.role as UserRole,
       });
-      toast.success("Account created! Please login");
+      toast.success("Account created! Redirecting to login... ✅");
       setTimeout(() => {
         router.push("/login");
-      }, 2000);
+      }, 1000);
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : "Registration failed";
       setError(errMsg);
