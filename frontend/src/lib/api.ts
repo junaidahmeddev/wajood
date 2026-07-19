@@ -91,6 +91,10 @@ class ApiService {
     return apiClient.get("/api/auth/users");
   }
 
+  async updateUser(id: string, data: any) {
+    return apiClient.patch(`/api/auth/users/${id}`, data);
+  }
+
   // ─── Cases ───
   async getCases(params?: Record<string, string>) {
     return apiClient.get("/api/cases/", { params });
@@ -183,6 +187,10 @@ class ApiService {
   // ─── Organizations ───
   async getOrganizations(params?: Record<string, string>) {
     return apiClient.get("/api/organizations/", { params });
+  }
+
+  async verifyOrganization(orgId: string) {
+    return apiClient.patch(`/api/organizations/${orgId}/verify`);
   }
 
   // ─── Notifications ───

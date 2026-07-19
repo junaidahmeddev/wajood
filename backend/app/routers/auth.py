@@ -8,7 +8,7 @@ from app.middleware.rbac import (
     hash_password, verify_password, create_access_token, get_current_user, require_roles
 )
 from app.models.user import User, UserRole
-from app.schemas.user import UserCreate, UserLogin, UserResponse, TokenResponse
+from app.schemas.user import UserCreate, UserLogin, UserResponse, TokenResponse, UserUpdate
 from app.services.audit_chain import create_audit_entry
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
@@ -144,3 +144,39 @@ async def get_users(
     result = await db.execute(select(User).order_by(User.created_at.desc()))
     users = result.scalars().all()
     return [UserResponse.model_validate(u) for u in users]
+
+
+@router.patch("/users/{id}", response_model=UserResponse)
+async def update_user(
+    id: str,
+    data: UserUpdate,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(require_roles([UserRole.ADMIN])),
+):
+    """Update user info (Admin only) (async)."""
+    import uuid
+    try:
+        user_uuid = uuid.UUID(id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid user ID format")
+
+    result = await db.execute(select(User).filter(User.id == user_uuid))
+    db_user = result.scalars().first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    update_data = data.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_user, key, value)
+
+    await db.commit()
+    await db.refresh(db_user)
+
+    # Log audit entry
+    from app.models.audit import AuditAction
+    await create_audit_entry(
+        db, action=AuditAction.UPDATE, table_name="users", record_id=db_user.id,
+        changed_by=user.id, changed_data=update_data,
+    )
+
+    return UserResponse.model_validate(db_user)
