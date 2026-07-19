@@ -60,12 +60,12 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const FALLBACK_ORGS = [
-    { id: "org-edhi", name: "Edhi Foundation" },
-    { id: "org-chhipa", name: "Chhipa Welfare" },
-    { id: "org-fia", name: "FIA Missing Persons Cell" },
-    { id: "org-jinnah", name: "Jinnah Hospital Karachi" },
-    { id: "org-ndma", name: "NDMA Pakistan" },
-    { id: "org-pfsa", name: "PFSA Lahore" },
+    { id: "org-edhi", name: "Edhi Foundation", type: "ngo" },
+    { id: "org-chhipa", name: "Chhipa Welfare", type: "ngo" },
+    { id: "org-fia", name: "FIA Missing Persons Cell", type: "law_enforcement" },
+    { id: "org-jinnah", name: "Jinnah Hospital Karachi", type: "hospital" },
+    { id: "org-ndma", name: "NDMA Pakistan", type: "government" },
+    { id: "org-pfsa", name: "PFSA Lahore", type: "forensics" },
   ];
   const [orgs, setOrgs] = useState<any[]>(FALLBACK_ORGS);
 
@@ -87,6 +87,26 @@ export default function RegisterPage() {
 
   const watchedProvince = watch("province");
   const selectedProvince = PAKISTAN_PROVINCES.find((p) => p.name === watchedProvince);
+
+  const selectedRole = watch("role");
+  const getOrgTypeForRole = (role: string) => {
+    switch (role) {
+      case "NGO_WORKER":
+        return "ngo";
+      case "OFFICER":
+        return "law_enforcement";
+      case "DOCTOR":
+        return "hospital";
+      case "GOVT_OFFICIAL":
+        return "government";
+      case "FORENSICS":
+        return "forensics";
+      default:
+        return "";
+    }
+  };
+  const targetType = getOrgTypeForRole(selectedRole);
+  const filteredOrgs = orgs.filter((o) => (o.type || "").toLowerCase() === targetType.toLowerCase());
 
   async function onSubmit(data: RegisterFields) {
     setError("");
